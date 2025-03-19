@@ -3,7 +3,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc && tsc-alias"
+    "build": "tsc && tsc-alias",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
@@ -22,7 +24,9 @@
     "zod-openapi": "^4.2.3"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^4.10.1",
     "@types/node": "^20.11.17",
+    "eslint": "^9.22.0",
     "tsc-alias": "^1.8.11",
     "tsx": "^4.7.1"
   }

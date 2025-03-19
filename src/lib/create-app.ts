@@ -1,10 +1,10 @@
-import { OpenAPIHono, type Hook } from "@hono/zod-openapi";
-import type { AppBindings } from "./types.js";
-import serveEmojiFavicon from "@/middleware/server-emoji-favicon.js";
-import { pinoLogger } from "./pino-logger.js";
+import { UNPROCESSABLE_ENTITY } from "@/lib/http-status-code.js";
+import { pinoLogger } from "@/lib/pino-logger.js";
+import type { AppBindings } from "@/lib/types.js";
 import notFound from "@/middleware/not-found.js";
 import onError from "@/middleware/on-error.js";
-import { UNPROCESSABLE_ENTITY } from "./http-status-code.js";
+import serveEmojiFavicon from "@/middleware/server-emoji-favicon.js";
+import { type Hook, OpenAPIHono } from "@hono/zod-openapi";
 
 export function createRouter() {
   const router = new OpenAPIHono<AppBindings>({
