@@ -19,6 +19,7 @@ export default function configureOpenAPI(app: AppOpenAPI) {
         targetKey: "js",
         clientKey: "fetch",
       },
+      // @ts-ignore
       spec: {
         url: "/doc",
       },

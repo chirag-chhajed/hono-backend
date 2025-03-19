@@ -18,6 +18,7 @@ const onError: ErrorHandler = (err, c) => {
 
       stack: env === "production" ? undefined : err.stack,
     },
+    // @ts-ignore
     statusCode
   );
 };

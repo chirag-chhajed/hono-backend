@@ -2,7 +2,8 @@
   "name": "hono-backend",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && tsc-alias"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
+    "tsc-alias": "^1.8.11",
     "tsx": "^4.7.1"
   }
 }

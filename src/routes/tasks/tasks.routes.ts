@@ -6,12 +6,6 @@ export const list = createRoute({
   tags: ["Tasks"],
   path: "/tasks",
   method: "get",
-  middleware: [
-    async (c, next) => {
-      c.var.logger.info("middleware");
-      await next();
-    },
-  ],
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.array(
