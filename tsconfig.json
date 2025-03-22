@@ -16,5 +16,6 @@
   },
   "tsc-alias": {
     "resolveFullPaths": true
-  }
+  },
+  "exclude": ["db.ts", "fir*.json"]
 }

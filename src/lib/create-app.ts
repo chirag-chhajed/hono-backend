@@ -7,6 +7,7 @@ import serveEmojiFavicon from "@/middleware/server-emoji-favicon.js";
 import { type Hook, OpenAPIHono } from "@hono/zod-openapi";
 import { cert, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+// @ts-ignore
 import * as admin from '../../fir-authentication-41806-firebase-adminsdk-ocd3y-66d893d6b2.json'
 
 export function createRouter() {
@@ -36,7 +37,7 @@ export default function createApp() {
   });
 
   app.use(serveEmojiFavicon("😀"));
-  // app.use(pinoLogger());
+  app.use(pinoLogger());
   app.notFound(notFound);
   app.onError(onError);
 

@@ -1,14 +1,10 @@
 import { env } from "@/env.js";
-import { config } from "dotenv";
-import { expand } from "dotenv-expand";
 
 import configureOpenAPI from "@/lib/configure-open-api.js";
 import createApp from "@/lib/create-app.js";
 import indexRoute from "@/routes/index.route.js";
 import tasksRoute from "@/routes/tasks/tasks.index.js";
 import authRoute from "@/routes/auth/auth.index.js";
-
-expand(config());
 
 const app = createApp();
 

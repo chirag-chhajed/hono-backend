@@ -12,7 +12,7 @@ export const UserEntity = new Entity({
   attributes: {
     userId: { type: "string", required: true,default: () => nanoid(32) },
     email: { type: "string", required: true },
-    name: { type: "string" },
+    name: { type: "string",required:true },
     createdAt: { type: "number", required: true,default: () => Date.now() },
     updatedAt: { type: "number", required: true,default: () => Date.now() },
   },

@@ -4,6 +4,13 @@ import type { PinoLogger } from "hono-pino";
 export type AppBindings = {
   Variables: {
     logger: PinoLogger;
+    jwtPayload: {
+      id: string;
+      email: string;
+      name: string;
+      organizationId?: string;
+      role?: string;
+    };
   };
 };
 

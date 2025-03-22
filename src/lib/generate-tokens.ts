@@ -2,13 +2,13 @@ import { sign } from 'hono/jwt';
 import { addMinutes, addDays } from 'date-fns';
 import { env } from '@/env.js';
 
-type BaseTokenPayload = {
+export type BaseTokenPayload = {
   id: string;
   email: string;
   name: string;
 };
 
-type OrgTokenPayload = BaseTokenPayload & {
+export type OrgTokenPayload = BaseTokenPayload & {
   organizationId: string;
   role: "admin" | "editor" | "viewer";
 }
