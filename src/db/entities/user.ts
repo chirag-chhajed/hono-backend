@@ -24,7 +24,7 @@ export const UserEntity = new Entity({
     byEmail: {
       index: "gsi1",
       pk: { field: "gsi1pk", composite: ["email"], template: "EMAIL#${email}" },
-      sk: { field: "gsi1sk", composite: [], template: "USER#${userId}" },
+      sk: { field: "gsi1sk", composite: ["userId"], template: "USER#${userId}" },
     },
   },
 },{

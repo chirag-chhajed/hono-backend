@@ -3,7 +3,7 @@ import { apiReference } from "@scalar/hono-api-reference";
 
 export default function configureOpenAPI(app: AppOpenAPI) {
   app.doc("/doc", {
-    openapi: "3.0.0",
+    openapi: "3.1.1",
     info: {
       version: "1.0.0",
       title: "Tasks API",

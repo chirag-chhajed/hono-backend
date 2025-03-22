@@ -5,6 +5,11 @@ export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "production"]).default("development"),
     PORT: z.coerce.number().default(3000),
+    FIREBASE_CLIENT_EMAIL: z.string().email(),
+    FIREBASE_PRIVATE_KEY: z.string().min(1),
+    FIREBASE_PROJECT_ID: z.string().min(1),
+    JWT_ACCESS_SECRET_KEY: z.string().min(1),
+    JWT_REFRESH_SECRET_KEY: z.string().min(1),
   },
   runtimeEnv: process.env,
 });
@@ -12,6 +17,11 @@ export const env = createEnv({
 const envVariables = z.object({
   NODE_ENV: z.enum(["development", "production"]).default("development"),
   PORT: z.coerce.number().default(3000),
+  FIREBASE_CLIENT_EMAIL: z.string().email(),
+  FIREBASE_PRIVATE_KEY: z.string().min(1),
+  FIREBASE_PROJECT_ID: z.string().min(1),
+  JWT_ACCESS_SECRET_KEY: z.string().min(1),
+  JWT_REFRESH_SECRET_KEY: z.string().min(1),
 });
 
 envVariables.parse(process.env);

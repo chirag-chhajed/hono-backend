@@ -30,3 +30,5 @@ lerna-debug.log*
 .cursor
 dist
 dynamodb_data
+fir-authentication*.json
+db.ts
