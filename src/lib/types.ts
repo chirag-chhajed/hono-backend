@@ -8,8 +8,8 @@ export type AppBindings = {
       id: string;
       email: string;
       name: string;
-      organizationId?: string;
-      role?: string;
+      organizationId: string;
+      role: string;
     };
   };
 };
