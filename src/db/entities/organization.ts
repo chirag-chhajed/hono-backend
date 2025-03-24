@@ -14,8 +14,20 @@ const OrganizationEntity = new Entity(
       createdBy: { type: "string", required: true }, // userId
       name: { type: "string", required: true },
       description: { type: "string", required: false },
-      createdAt: { type: "number", required: true, default: () => Date.now() },
-      updatedAt: { type: "number", required: true, default: () => Date.now() },
+      createdAt: {
+        type: "number",
+        required: true,
+        default: () => Date.now(),
+        readOnly: true,
+        set: () => Date.now(),
+      },
+      updatedAt: {
+        type: "number",
+        required: true,
+        default: () => Date.now(),
+        watch: "*",
+        set: () => Date.now(),
+      },
     },
     indexes: {
       primary: {
