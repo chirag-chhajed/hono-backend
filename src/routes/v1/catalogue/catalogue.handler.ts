@@ -3,6 +3,7 @@ import * as HttpStatusCodes from "@/lib/http-status-code.js";
 import type { AppRouteHandler } from "@/lib/types.js";
 import type {
   CreateCatalogueRoute,
+  FileUploadRoute,
   GetCataloguesRoute,
 } from "@/routes/v1/catalogue/catalogue.routes.js";
 
@@ -42,5 +43,16 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
       nextCursor: catalogues.cursor,
     },
     HttpStatusCodes.OK
+  );
+};
+
+export const fileUpload: AppRouteHandler<FileUploadRoute> = async (c) => {
+  const body = await c.req.parseBody();
+
+  console.log(Object.values(body));
+
+  return c.json(
+    { message: "File uploaded successfully" },
+    HttpStatusCodes.CREATED
   );
 };

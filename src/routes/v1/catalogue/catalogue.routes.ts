@@ -15,7 +15,7 @@ const createCatalogueSchema = z.object({
 export const createCatalogueRoute = createRoute({
   method: "post",
   tags: ["Catalogue"],
-  path: "/",
+  path: "/catalogue",
   request: {
     body: {
       content: {
@@ -54,7 +54,7 @@ const getCataloguesSchema = z.object({
 export const getCataloguesRoute = createRoute({
   method: "get",
   tags: ["Catalogue"],
-  path: "/",
+  path: "/catalogue",
   request: {
     query: getCataloguesSchema,
   },
@@ -80,5 +80,48 @@ export const getCataloguesRoute = createRoute({
   middlewares: [authenticate, requireOrganization] as const,
 });
 
+export const fileUploadRoute = createRoute({
+  method: "post",
+  path: "/catalogue/file-upload",
+  request: {
+    body: {
+      content: {
+        "multipart/form-data": {
+          schema: z
+            .record(
+              z.string().min(1),
+              z
+                .instanceof(File, { message: "Please upload a file." })
+                .refine(
+                  (f) => f.size <= 5 * 1024 * 1024,
+                  "Max 5 MB upload size."
+                )
+                .refine((f) => f.type.includes("image"), {
+                  message: "Only images are allowed",
+                })
+            )
+            .refine(
+              (files) => Object.keys(files).length <= 5,
+              "Maximum 5 files allowed"
+            )
+            .refine(
+              (files) => Object.keys(files).length >= 1,
+              "Minimum 1 file required"
+            ),
+        },
+      },
+    },
+  },
+  responses: {
+    [HttpStatusCodes.CREATED]: jsonContent(
+      z.object({
+        message: z.string(),
+      }),
+      "File uploaded successfully"
+    ),
+  },
+});
+
 export type CreateCatalogueRoute = typeof createCatalogueRoute;
 export type GetCataloguesRoute = typeof getCataloguesRoute;
+export type FileUploadRoute = typeof fileUploadRoute;

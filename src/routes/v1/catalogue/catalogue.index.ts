@@ -6,5 +6,6 @@ const router = createRouter();
 
 router.openapi(routes.createCatalogueRoute, handlers.createCatalogue);
 router.openapi(routes.getCataloguesRoute, handlers.getCatalogues);
+router.openapi(routes.fileUploadRoute, handlers.fileUpload);
 
 export default router;
