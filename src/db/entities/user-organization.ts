@@ -19,6 +19,9 @@ const UserOrganizationEntity = new Entity(
         readOnly: true,
         set: () => Date.now(),
       },
+
+      orgName: { type: "string", required: true },
+      orgDescription: { type: "string", required: false },
     },
     indexes: {
       primary: {

@@ -1,4 +1,3 @@
-import { OrganizationEntity } from "@/db/entities/organization.js";
 import { UserOrganizationEntity } from "@/db/entities/user-organization.js";
 import type { AppRouteHandler } from "@/lib/types.js";
 import type {
@@ -32,6 +31,8 @@ export const createOrganisation: AppRouteHandler<
             orgId,
             role: "admin",
             userId: id,
+            orgName: name,
+            orgDescription: description,
           })
           .commit(),
       ])
@@ -64,23 +65,12 @@ export const getOrganisations: AppRouteHandler<GetOrganisationsRoute> = async (
         userId: id,
       })
       .go();
-
-    const orgData = await OrganizationEntity.get(
-      orgIds.data.map((h) => ({ orgId: h.orgId }))
-    ).go();
-
-    const organisations = orgIds.data
-      .map((orgId) => {
-        const org = orgData?.data.find((o) => o.orgId === orgId.orgId);
-        if (!org?.name) return null;
-        return {
-          orgId: orgId.orgId,
-          name: org.name,
-          description: org?.description,
-          role: orgId.role,
-        };
-      })
-      .filter((org) => org !== null);
+    const organisations = orgIds.data.map((org) => ({
+      name: org.orgName,
+      description: org.orgDescription,
+      orgId: org.orgId,
+      role: org.role,
+    }));
 
     return c.json(organisations, HttpStatusCodes.OK);
   } catch (error) {
