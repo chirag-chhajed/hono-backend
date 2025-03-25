@@ -4,7 +4,7 @@ import type {
   CreateOrganisationRoute,
   GetOrganisationsRoute,
   RemoveUserFromOrganisationRoute,
-} from "@/routes/organisation/organisation.routes.js";
+} from "@/routes/v1/organisation/organisation.routes.js";
 import * as HttpStatusCodes from "@/lib/http-status-code.js";
 import { organizationService } from "@/db/organization-service.js";
 import { nanoid } from "nanoid";

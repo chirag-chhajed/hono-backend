@@ -74,5 +74,44 @@ export const getInvitations = createRoute({
   },
 });
 
+export const acceptInvitation = createRoute({
+  method: "post",
+  tags: ["Invitation"],
+  path: "/invitation/accept",
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            code: z.string().length(10),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({
+        message: z.string(),
+      }),
+      "Invitation accepted"
+    ),
+    [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+      z.object({
+        message: z.string(),
+      }),
+      "Already accepted"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.object({
+        message: z.string(),
+      }),
+      "Invitation not found"
+    ),
+  },
+});
+
 export type CreateInvitationRoute = typeof createInvitation;
 export type GetInvitationsRoute = typeof getInvitations;
+export type AcceptInvitationRoute = typeof acceptInvitation;

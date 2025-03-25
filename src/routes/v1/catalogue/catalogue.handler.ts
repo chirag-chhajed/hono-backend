@@ -4,7 +4,7 @@ import type { AppRouteHandler } from "@/lib/types.js";
 import type {
   CreateCatalogueRoute,
   GetCataloguesRoute,
-} from "./catalogue.routes.js";
+} from "@/routes/v1/catalogue/catalogue.routes.js";
 
 export const createCatalogue: AppRouteHandler<CreateCatalogueRoute> = async (
   c
