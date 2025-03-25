@@ -2,6 +2,7 @@
   "name": "hono-backend",
   "type": "module",
   "scripts": {
+    "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "build": "tsc && tsc-alias",
     "lint": "eslint .",

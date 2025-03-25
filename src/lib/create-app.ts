@@ -7,8 +7,7 @@ import serveEmojiFavicon from "@/middleware/server-emoji-favicon.js";
 import { type Hook, OpenAPIHono } from "@hono/zod-openapi";
 import { cert, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-// @ts-ignore
-import * as admin from '../../fir-authentication-41806-firebase-adminsdk-ocd3y-66d893d6b2.json'
+import { env } from "@/env.js";
 
 export function createRouter() {
   const router = new OpenAPIHono<AppBindings>({
@@ -45,12 +44,11 @@ export default function createApp() {
 }
 
 const firebaseAdmin = initializeApp({
-  
-credential: cert({
-  clientEmail:admin.default.client_email,
-  privateKey:admin.default.private_key,
-  projectId:admin.default.project_id
-})
-})
+  credential: cert({
+    clientEmail: env.FIREBASE_CLIENT_EMAIL,
+    privateKey: env.FIREBASE_PRIVATE_KEY,
+    projectId: env.FIREBASE_PROJECT_ID,
+  }),
+});
 
-export const auth = getAuth(firebaseAdmin)
+export const auth = getAuth(firebaseAdmin);

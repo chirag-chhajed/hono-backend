@@ -7,6 +7,8 @@ import type {
   RemoveUserFromOrganisationRoute,
 } from "@/routes/organisation/organisation.routes.js";
 import * as HttpStatusCodes from "@/lib/http-status-code.js";
+import { organizationService } from "@/db/organization-service.js";
+import { nanoid } from "nanoid";
 
 export const createOrganisation: AppRouteHandler<
   CreateOrganisationRoute
@@ -14,17 +16,26 @@ export const createOrganisation: AppRouteHandler<
   try {
     const { name, description } = c.req.valid("json");
     const { id } = c.get("jwtPayload");
-
-    const organisation = await OrganizationEntity.create({
-      name,
-      description,
-      createdBy: id,
-    }).go();
-    UserOrganizationEntity.create({
-      orgId: organisation.data.orgId,
-      role: "admin",
-      userId: id,
-    }).go();
+    const orgId = nanoid(32);
+    await organizationService.transaction
+      .write(({ organisation, userOrganization }) => [
+        organisation
+          .create({
+            name,
+            description,
+            createdBy: id,
+            orgId,
+          })
+          .commit(),
+        userOrganization
+          .create({
+            orgId,
+            role: "admin",
+            userId: id,
+          })
+          .commit(),
+      ])
+      .go();
 
     return c.json(
       {
