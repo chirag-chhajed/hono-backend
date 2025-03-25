@@ -2,19 +2,18 @@ import { env } from "@/env.js";
 
 import configureOpenAPI from "@/lib/configure-open-api.js";
 import createApp from "@/lib/create-app.js";
-import indexRoute from "@/routes/index.route.js";
-import tasksRoute from "@/routes/tasks/tasks.index.js";
-import authRoute from "@/routes/auth/auth.index.js";
-import organisationRoute from "@/routes/organisation/organisation.index.js";
+import authRoute from "@/routes/v1/auth/auth.index.js";
+import organisationRoute from "@/routes/v1/organisation/organisation.index.js";
+import catalogueRoute from "@/routes/v1/catalogue/catalogue.index.js";
 
 const app = createApp();
 
-const routes = [indexRoute, tasksRoute, authRoute, organisationRoute];
+const v1Routes = [authRoute, organisationRoute, catalogueRoute];
 
 configureOpenAPI(app);
 
-for (const route of routes) {
-  app.route("/api", route);
+for (const route of v1Routes) {
+  app.route("/api/v1", route);
 }
 
 app.get("/", (c) => {

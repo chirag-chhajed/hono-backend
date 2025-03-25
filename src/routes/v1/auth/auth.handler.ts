@@ -3,7 +3,7 @@ import type {
   LoginRoute,
   RefreshRoute,
   LogoutRoute,
-} from "@/routes/auth/auth.routes.js";
+} from "@/routes/v1/auth/auth.routes.js";
 import * as HttpStatusCodes from "@/lib/http-status-code.js";
 import { UserEntity } from "@/db/entities/user.js";
 import {

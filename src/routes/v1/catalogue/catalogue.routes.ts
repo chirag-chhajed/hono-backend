@@ -1,5 +1,4 @@
-import { z } from "zod";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { jsonContent } from "@/lib/openapi/helpers/json-content.js";
 import {
   authenticate,

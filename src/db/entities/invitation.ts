@@ -20,7 +20,8 @@ const InvitationEntity = new Entity(
       createdBy: { type: "string", required: true }, // userId (admin)
       expiresAt: { type: "number", required: true },
       usedBy: { type: "string" }, // userId (optional)
-      usedAt: { type: "number" }, // timestamp (optional)
+      usedAt: { type: "number" },
+      role: { type: ["admin", "editor", "viewer"], required: true }, // timestamp (optional)
       createdAt: {
         type: "number",
         required: true,
