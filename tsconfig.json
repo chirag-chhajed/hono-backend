@@ -11,6 +11,7 @@
     "types": ["node"],
     "strict": true,
     "outDir": "./dist",
+    "sourceMap": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },

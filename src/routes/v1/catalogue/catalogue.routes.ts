@@ -92,22 +92,19 @@ export const fileUploadRoute = createRoute({
               z.string().min(1),
               z
                 .instanceof(File, { message: "Please upload a file." })
-                .refine(
-                  (f) => f.size <= 5 * 1024 * 1024,
-                  "Max 5 MB upload size."
-                )
-                .refine((f) => f.type.includes("image"), {
+                .refine((f) => f.size <= 5 * 1024 * 1024, {
+                  message: "Max 5 MB upload size.",
+                })
+                .refine((f) => f.type.includes("image/"), {
                   message: "Only images are allowed",
                 })
             )
-            .refine(
-              (files) => Object.keys(files).length <= 5,
-              "Maximum 5 files allowed"
-            )
-            .refine(
-              (files) => Object.keys(files).length >= 1,
-              "Minimum 1 file required"
-            ),
+            .refine((files) => Object.keys(files).length <= 5, {
+              message: "Maximum 5 files allowed",
+            })
+            .refine((files) => Object.keys(files).length >= 1, {
+              message: "Minimum 1 file required",
+            }),
         },
       },
     },
