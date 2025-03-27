@@ -108,6 +108,15 @@ export const fileUploadRoute = createRoute({
         },
       },
     },
+    query: z.object({
+      name: z.string().min(1).max(100),
+      description: z.string().min(1).max(500).optional(),
+      price: z.coerce
+        .number({ message: "Enter a valid price" })
+        .positive("Price must be greater than 0")
+        .multipleOf(0.01, "Price can only have up to 2 decimal places")
+        .min(0.01, "Minimum price is 0.01"),
+    }),
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
