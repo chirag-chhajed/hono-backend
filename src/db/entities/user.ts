@@ -31,20 +31,28 @@ export const UserEntity = new Entity(
     },
     indexes: {
       primary: {
-        pk: { field: "pk", composite: ["userId"], template: "USER#${userId}" },
-        sk: { field: "sk", composite: ["userId"], template: "USER#${userId}" },
+        pk: {
+          field: "pk",
+          composite: ["userId"],
+          // template: "USER#${userId}"
+        },
+        sk: {
+          field: "sk",
+          composite: ["userId"],
+          // template: "USER#${userId}"
+        },
       },
       byEmail: {
         index: "gsi1",
         pk: {
           field: "gsi1pk",
           composite: ["email"],
-          template: "EMAIL#${email}",
+          // template: "EMAIL#${email}",
         },
         sk: {
           field: "gsi1sk",
           composite: ["userId"],
-          template: "USER#${userId}",
+          // template: "USER#${userId}",
         },
       },
     },

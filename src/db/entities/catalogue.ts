@@ -36,24 +36,13 @@ const CatalogueEntity = new Entity({
   },
   indexes: {
     primary: {
-      pk: { field: "pk", composite: ["orgId"], template: "ORG#${orgId}" },
+      pk: {
+        field: "pk",
+        composite: ["orgId"],
+      },
       sk: {
         field: "sk",
-        composite: ["catalogueId"],
-        template: "CAT#${catalogueId}",
-      },
-    },
-    byOrgAndCreationTime: {
-      index: "gsi1",
-      pk: {
-        field: "gsi1pk",
-        composite: ["orgId"],
-        template: "ORG#${orgId}",
-      },
-      sk: {
-        field: "gsi1sk",
-        composite: ["createdAt"],
-        template: "CREATED#${createdAt}",
+        composite: ["createdAt", "catalogueId"],
       },
     },
   },

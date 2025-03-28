@@ -11,8 +11,9 @@ const CatalogueItemImageEntity = new Entity(
     },
     attributes: {
       imageId: { type: "string", required: true, default: () => nanoid(32) },
-      orgId: { type: "string", required: true },
       itemId: { type: "string", required: true },
+      catalogueId: { type: "string", required: true },
+      orgId: { type: "string", required: true },
       imageUrl: { type: "string", required: true },
       blurhash: { type: "string" },
       createdAt: {
@@ -20,25 +21,24 @@ const CatalogueItemImageEntity = new Entity(
         required: true,
         default: () => Date.now(),
         readOnly: true,
-        set: () => Date.now(),
       },
       deletedAt: { type: "number" },
     },
     indexes: {
+      // Primary index: All images for an item
       primary: {
-        pk: { field: "pk", composite: ["orgId"], template: "ORG#${orgId}" },
+        pk: {
+          field: "pk",
+          composite: ["catalogueId"],
+        },
         sk: {
           field: "sk",
-          composite: ["imageId"],
-          template: "IMAGE#${imageId}",
+          composite: ["createdAt", "imageId"],
         },
       },
     },
   },
-  {
-    client: dynamoClient,
-    table: TABLE_NAME,
-  }
+  { client: dynamoClient, table: TABLE_NAME }
 );
 
 export { CatalogueItemImageEntity };

@@ -83,7 +83,7 @@ export const getCataloguesRoute = createRoute({
 export const createCatalogueItemRoute = createRoute({
   method: "post",
   tags: ["Catalogue"],
-  path: "/catalogue/item/{catalogueId}",
+  path: "/catalogue/{catalogueId}",
   request: {
     body: {
       content: {
@@ -100,8 +100,8 @@ export const createCatalogueItemRoute = createRoute({
                   message: "Only images are allowed",
                 })
             )
-            .refine((files) => Object.keys(files).length <= 5, {
-              message: "Maximum 5 files allowed",
+            .refine((files) => Object.keys(files).length <= 1, {
+              message: "Maximum 1 file allowed",
             })
             .refine((files) => Object.keys(files).length >= 1, {
               message: "Minimum 1 file required",
@@ -140,6 +140,28 @@ export const createCatalogueItemRoute = createRoute({
   ] as const,
 });
 
+export const getCatalogueItems = createRoute({
+  method: "get",
+  tags: ["Catalogue"],
+  path: "/catalogue/{catalogueId}",
+  request: {
+    query: getCataloguesSchema.extend({
+      priceSort: z.enum(["asc", "desc"]).optional(),
+    }),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({
+        items: z.array(z.object({})),
+        nextCursor: z.string().nullable(),
+      }),
+      "Catalogue items retrieved successfully"
+    ),
+  },
+  middlewares: [authenticate, requireOrganization] as const,
+});
+
 export type CreateCatalogueRoute = typeof createCatalogueRoute;
 export type GetCataloguesRoute = typeof getCataloguesRoute;
 export type CreateCatalogueItemRoute = typeof createCatalogueItemRoute;
+export type GetCatalogueItemsRoute = typeof getCatalogueItems;

@@ -11,7 +11,7 @@ const UserOrganizationEntity = new Entity(
     attributes: {
       orgId: { type: "string", required: true },
       userId: { type: "string", required: true },
-      role: { type: ["admin", "editor", "viewer"], required: true },
+      role: { type: ["admin", "editor", "viewer"] as const, required: true },
       joinedAt: {
         type: "number",
         required: true,
@@ -25,8 +25,16 @@ const UserOrganizationEntity = new Entity(
     },
     indexes: {
       primary: {
-        pk: { field: "pk", composite: ["orgId"], template: "ORG#${orgId}" },
-        sk: { field: "sk", composite: ["userId"], template: "USER#${userId}" },
+        pk: {
+          field: "pk",
+          composite: ["orgId"],
+          // template: "ORG#${orgId}"
+        },
+        sk: {
+          field: "sk",
+          composite: ["userId"],
+          // template: "USER#${userId}"
+        },
       },
       byUser: {
         index: "gsi1",

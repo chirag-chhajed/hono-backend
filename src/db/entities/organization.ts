@@ -31,8 +31,16 @@ const OrganizationEntity = new Entity(
     },
     indexes: {
       primary: {
-        pk: { field: "pk", composite: ["orgId"], template: "ORG#${orgId}" },
-        sk: { field: "sk", composite: ["orgId"], template: "ORG#${orgId}" },
+        pk: {
+          field: "pk",
+          composite: ["orgId"],
+          // template: "ORG#${orgId}"
+        },
+        sk: {
+          field: "sk",
+          composite: ["orgId"],
+          // template: "ORG#${orgId}"
+        },
       },
     },
   },

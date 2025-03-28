@@ -32,23 +32,33 @@ const CatalogueItemEntity = new Entity(
         set: () => Date.now(),
       },
       deletedAt: { type: "number" },
+      image: {
+        type: "map",
+        required: true,
+        properties: {
+          imageUrl: { type: "string", required: true },
+          blurhash: { type: "string" },
+          uploadedAt: { type: "number", default: () => Date.now() },
+        },
+      },
     },
     indexes: {
       primary: {
         pk: {
           field: "pk",
           composite: ["catalogueId"],
-          template: "CAT#${catalogueId}",
         },
-        sk: { field: "sk", composite: ["itemId"], template: "ITEM#${itemId}" },
+        sk: {
+          field: "sk",
+          composite: ["createdAt", "itemId"],
+        },
       },
-      byOrg: {
+      byPrice: {
         index: "gsi1",
-        pk: { field: "gsi1pk", composite: ["orgId"], template: "ORG#${orgId}" },
+        pk: { field: "gsi1pk", composite: ["catalogueId"] },
         sk: {
           field: "gsi1sk",
-          composite: ["itemId"],
-          template: "ITEM#${itemId}",
+          composite: ["price", "createdAt"],
         },
       },
     },

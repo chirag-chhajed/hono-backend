@@ -32,20 +32,28 @@ const InvitationEntity = new Entity(
     },
     indexes: {
       primary: {
-        pk: { field: "pk", composite: ["orgId"], template: "ORG#${orgId}" },
+        pk: {
+          field: "pk",
+          composite: ["orgId"],
+          // template: "ORG#${orgId}"
+        },
         sk: {
           field: "sk",
           composite: ["invitationId"],
-          template: "INVITATION#${invitationId}",
+          // template: "INVITATION#${invitationId}",
         },
       },
       byCode: {
         index: "gsi1",
-        pk: { field: "gsi1pk", composite: ["code"], template: "CODE#${code}" },
+        pk: {
+          field: "gsi1pk",
+          composite: ["code"],
+          //template: "CODE#${code}"
+        },
         sk: {
           field: "gsi1sk",
           composite: ["invitationId"],
-          template: "INVITATION#${invitationId}",
+          // template: "INVITATION#${invitationId}",
         },
       },
     },

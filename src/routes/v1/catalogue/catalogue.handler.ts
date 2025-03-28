@@ -6,14 +6,16 @@ import type {
   CreateCatalogueRoute,
   CreateCatalogueItemRoute,
   GetCataloguesRoute,
+  GetCatalogueItemsRoute,
 } from "@/routes/v1/catalogue/catalogue.routes.js";
 import { nanoid } from "nanoid";
-import { promises } from "node:fs";
 import sharp from "sharp";
 import { encode } from "blurhash";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { env } from "@/env.js";
 import { s3Client } from "@/lib/s3Client.js";
+import { CatalogueItemEntity } from "@/db/entities/catalogue-item.js";
+import { CatalogueItemImageEntity } from "@/db/entities/catalogue-item-image.js";
 
 export const createCatalogue: AppRouteHandler<CreateCatalogueRoute> = async (
   c
@@ -37,7 +39,9 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
   const { organizationId } = c.get("jwtPayload");
 
   const catalogues = await CatalogueEntity.query
-    .byOrgAndCreationTime({ orgId: organizationId })
+    .primary({
+      orgId: organizationId,
+    })
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
     .go({
       cursor,
@@ -45,9 +49,37 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
       order: order,
     });
 
+  const images = await Promise.all(
+    catalogues.data.map((catalogue) =>
+      CatalogueItemImageEntity.query
+        .primary({
+          catalogueId: catalogue.catalogueId,
+        })
+        .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
+        .go({
+          limit: 5,
+          order: "desc",
+        })
+    )
+  );
+
+  const result = catalogues.data.map((catalogue) => {
+    const catalogueImages =
+      images.find((imgResponse) =>
+        imgResponse.data.some(
+          (img) => img.catalogueId === catalogue.catalogueId
+        )
+      )?.data || [];
+
+    return {
+      ...catalogue,
+      images: catalogueImages,
+    };
+  });
+
   return c.json(
     {
-      items: catalogues.data,
+      items: result,
       nextCursor: catalogues.cursor,
     },
     HttpStatusCodes.OK
@@ -63,12 +95,17 @@ export const createCatalogueItem: AppRouteHandler<
   const fileArray = Object.values(hello);
   const catalogueId = c.req.param("catalogueId");
 
-  const catalogue = await CatalogueEntity.get({
-    catalogueId,
-    orgId: organizationId,
-  }).go();
+  const catalogue = await CatalogueEntity.query
+    .primary({
+      catalogueId,
+      orgId: organizationId,
+    })
+    .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
+    .go({
+      count: 1,
+    });
 
-  if (!catalogue.data) {
+  if (catalogue.data.length === 0) {
     return c.json(
       { message: "Catalogue not found" },
       HttpStatusCodes.NOT_FOUND
@@ -115,6 +152,7 @@ export const createCatalogueItem: AppRouteHandler<
           itemId,
           imageUrl: `https://${env.S3_BUCKET_NAME}.s3.${env.AWS_REGION}.amazonaws.com/${fileName}`,
           blurhash,
+          catalogueId,
         };
       } catch (error) {
         c.var.logger.error(
@@ -139,6 +177,10 @@ export const createCatalogueItem: AppRouteHandler<
           price,
           description,
           orgId: organizationId,
+          image: {
+            imageUrl: images[0].imageUrl,
+            blurhash: images[0].blurhash,
+          },
         })
         .commit(),
       ...images.map((img) => catalogueImages.create(img).commit()),
@@ -148,5 +190,32 @@ export const createCatalogueItem: AppRouteHandler<
   return c.json(
     { message: "File uploaded successfully" },
     HttpStatusCodes.CREATED
+  );
+};
+
+export const getCatalogueItems: AppRouteHandler<
+  GetCatalogueItemsRoute
+> = async (c) => {
+  const { cursor, order = "desc", priceSort } = c.req.valid("query");
+  const { catalogueId } = c.req.param();
+
+  const query = priceSort
+    ? CatalogueItemEntity.query.byPrice({ catalogueId })
+    : CatalogueItemEntity.query.primary({ catalogueId });
+
+  const items = await query
+    .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
+    .go({
+      cursor,
+      limit: 20,
+      order: priceSort ?? order,
+    });
+
+  return c.json(
+    {
+      items: items.data,
+      nextCursor: items.cursor,
+    },
+    HttpStatusCodes.OK
   );
 };
