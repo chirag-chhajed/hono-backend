@@ -17,7 +17,6 @@ const CatalogueItemEntity = new Entity(
       description: { type: "string" },
       price: { type: "number", required: true },
       metadata: { type: "any" }, // JSON object
-      imageIds: { type: "list", items: { type: "string" } }, // List of image IDs
       createdAt: {
         type: "number",
         required: true,
@@ -33,7 +32,6 @@ const CatalogueItemEntity = new Entity(
         set: () => Date.now(),
       },
       deletedAt: { type: "number" },
-      originalItemId: { type: "string" }, // Track copies for new catalogues
     },
     indexes: {
       primary: {

@@ -13,6 +13,10 @@ export const env = createEnv({
     FIREBASE_PROJECT_ID: z.string().min(1),
     JWT_ACCESS_SECRET_KEY: z.string().min(1),
     JWT_REFRESH_SECRET_KEY: z.string().min(1),
+    AWS_ACCESS_KEY_ID: z.string().min(1),
+    AWS_SECRET_ACCESS_KEY: z.string().min(1),
+    AWS_REGION: z.string().min(1),
+    S3_BUCKET_NAME: z.string().min(1),
   },
   runtimeEnv: process.env,
 });
@@ -25,6 +29,10 @@ const envVariables = z.object({
   FIREBASE_PROJECT_ID: z.string().min(1),
   JWT_ACCESS_SECRET_KEY: z.string().min(1),
   JWT_REFRESH_SECRET_KEY: z.string().min(1),
+  AWS_ACCESS_KEY_ID: z.string().min(1),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1),
+  AWS_REGION: z.string().min(1),
+  S3_BUCKET_NAME: z.string().min(1),
 });
 
 envVariables.parse(process.env);

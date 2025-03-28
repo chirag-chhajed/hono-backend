@@ -12,6 +12,7 @@ const CatalogueItemImageEntity = new Entity(
     attributes: {
       imageId: { type: "string", required: true, default: () => nanoid(32) },
       orgId: { type: "string", required: true },
+      itemId: { type: "string", required: true },
       imageUrl: { type: "string", required: true },
       blurhash: { type: "string" },
       createdAt: {

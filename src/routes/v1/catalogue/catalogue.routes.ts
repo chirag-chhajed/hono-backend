@@ -80,9 +80,10 @@ export const getCataloguesRoute = createRoute({
   middlewares: [authenticate, requireOrganization] as const,
 });
 
-export const fileUploadRoute = createRoute({
+export const createCatalogueItemRoute = createRoute({
   method: "post",
-  path: "/catalogue/file-upload",
+  tags: ["Catalogue"],
+  path: "/catalogue/item/{catalogueId}",
   request: {
     body: {
       content: {
@@ -123,11 +124,22 @@ export const fileUploadRoute = createRoute({
       z.object({
         message: z.string(),
       }),
-      "File uploaded successfully"
+      "Catalogue item created successfully"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.object({
+        message: z.string(),
+      }),
+      "Catalogue not found"
     ),
   },
+  middlewares: [
+    authenticate,
+    requireOrganization,
+    requirePermission("create:catalogue"),
+  ] as const,
 });
 
 export type CreateCatalogueRoute = typeof createCatalogueRoute;
 export type GetCataloguesRoute = typeof getCataloguesRoute;
-export type FileUploadRoute = typeof fileUploadRoute;
+export type CreateCatalogueItemRoute = typeof createCatalogueItemRoute;
