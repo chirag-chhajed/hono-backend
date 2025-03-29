@@ -567,8 +567,35 @@ export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (c
     orgId: organizationId,
   }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} || ${contains(description, search)}`).go();
 
+  const images = await Promise.all(
+    catalogues.data.map(async catalogue =>
+      CatalogueItemImageEntity.query
+        .byCatalogueId({
+          catalogueId: catalogue.catalogueId,
+        })
+        .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
+        .go({
+          limit: 5,
+          order: 'desc',
+        }),
+    ),
+  );
+
+  const result = catalogues.data.map((catalogue) => {
+    const catalogueImages
+      = images.find(imgResponse =>
+        imgResponse.data.some(
+          img => img.catalogueId === catalogue.catalogueId,
+        ),
+      )?.data || [];
+
+    return {
+      ...catalogue,
+      images: catalogueImages,
+    };
+  });
   return c.json({
-    items: catalogues.data,
+    items: result,
   }, HttpStatusCodes.OK);
 };
 

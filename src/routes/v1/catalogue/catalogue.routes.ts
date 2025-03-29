@@ -73,6 +73,14 @@ export const getCataloguesRoute = createRoute({
             createdBy: z.string(),
             createdAt: z.number(),
             updatedAt: z.number(),
+            deletedAt: z.number().optional(),
+            images: z.array(z.object({
+              imageUrl: z.string(),
+              blurhash: z.string().optional(),
+              imageId: z.string(),
+              catalogueId: z.string(),
+              itemId: z.string(),
+            })),
           }),
         ),
         nextCursor: z.string().nullable(),
@@ -157,7 +165,23 @@ export const getCatalogueItems = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({})),
+        items: z.array(z.object({
+          itemId: z.string(),
+          catalogueId: z.string(),
+          orgId: z.string(),
+          name: z.string(),
+          description: z.string().optional(),
+          price: z.number(),
+          metadata: z.any().optional(),
+          createdAt: z.number(),
+          updatedAt: z.number(),
+          deletedAt: z.number().optional(),
+          image: z.object({
+            imageUrl: z.string(),
+            blurhash: z.string().optional(),
+            uploadedAt: z.number().optional(),
+          }),
+        })),
         nextCursor: z.string().nullable(),
       }),
       'Catalogue items retrieved successfully',
@@ -177,7 +201,23 @@ export const allItemsRoute = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({})),
+        items: z.array(z.object({
+          itemId: z.string(),
+          catalogueId: z.string(),
+          orgId: z.string(),
+          name: z.string(),
+          description: z.string().optional(),
+          price: z.number(),
+          metadata: z.any().optional(),
+          createdAt: z.number(),
+          updatedAt: z.number(),
+          deletedAt: z.number().optional(),
+          image: z.object({
+            imageUrl: z.string(),
+            blurhash: z.string().optional(),
+            uploadedAt: z.number().optional(),
+          }),
+        })),
         nextCursor: z.string().nullable(),
       }),
       'All items retrieved successfully',
@@ -470,7 +510,23 @@ export const searchCataloguesRoute = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({})),
+        items: z.array(z.object({
+          catalogueId: z.string(),
+          orgId: z.string(),
+          name: z.string(),
+          description: z.string().optional(),
+          createdBy: z.string(),
+          createdAt: z.number(),
+          updatedAt: z.number(),
+          deletedAt: z.number().optional(),
+          images: z.array(z.object({
+            imageUrl: z.string(),
+            blurhash: z.string().optional(),
+            imageId: z.string(),
+            catalogueId: z.string(),
+            itemId: z.string(),
+          })),
+        })),
 
       }),
       'Catalogues searched successfully',
@@ -492,7 +548,23 @@ export const searchAllCatalogueItemsRoute = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({})),
+        items: z.array(z.object({
+          itemId: z.string(),
+          catalogueId: z.string(),
+          orgId: z.string(),
+          name: z.string(),
+          description: z.string().optional(),
+          price: z.number(),
+          metadata: z.any().optional(),
+          createdAt: z.number(),
+          updatedAt: z.number(),
+          deletedAt: z.number().optional(),
+          image: z.object({
+            imageUrl: z.string(),
+            blurhash: z.string().optional(),
+            uploadedAt: z.number().optional(),
+          }),
+        })),
       }),
       'Catalogues searched successfully',
     ),
@@ -513,7 +585,23 @@ export const searchCatalogueItemsRoute = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({})),
+        items: z.array(z.object({
+          itemId: z.string(),
+          catalogueId: z.string(),
+          orgId: z.string(),
+          name: z.string(),
+          description: z.string().optional(),
+          price: z.number(),
+          metadata: z.any().optional(),
+          createdAt: z.number(),
+          updatedAt: z.number(),
+          deletedAt: z.number().optional(),
+          image: z.object({
+            imageUrl: z.string(),
+            blurhash: z.string().optional(),
+            uploadedAt: z.number().optional(),
+          }),
+        })),
       }),
       'Catalogues searched successfully',
     ),
