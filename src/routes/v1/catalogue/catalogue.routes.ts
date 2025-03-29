@@ -130,6 +130,9 @@ export const createCatalogueItemRoute = createRoute({
         .multipleOf(0.01, 'Price can only have up to 2 decimal places')
         .min(0.01, 'Minimum price is 0.01'),
     }),
+    params: z.object({
+      catalogueId: z.string(),
+    }),
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
@@ -160,6 +163,9 @@ export const getCatalogueItems = createRoute({
   request: {
     query: getCataloguesSchema.extend({
       priceSort: z.enum(['asc', 'desc']).optional(),
+    }),
+    params: z.object({
+      catalogueId: z.string(),
     }),
   },
   responses: {
@@ -333,6 +339,9 @@ export const bulkDeleteItemsRoute = createRoute({
           }),
         },
       },
+      params: z.object({
+        catalogueId: z.string(),
+      }),
     },
   },
   responses: {
@@ -373,6 +382,9 @@ export const updateCatalogueRoute = createRoute({
         },
       },
     },
+    params: z.object({
+      catalogueId: z.string(),
+    }),
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
@@ -404,6 +416,9 @@ export const deleteCatalogueRoute = createRoute({
         },
       },
     },
+    params: z.object({
+      catalogueId: z.string(),
+    }),
   },
   responses: {
     [HttpStatusCodes.NO_CONTENT]: {
@@ -441,6 +456,10 @@ export const updateCatalogueItemRoute = createRoute({
         },
       },
     },
+    params: z.object({
+      catalogueId: z.string(),
+      itemId: z.string(),
+    }),
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
@@ -478,6 +497,10 @@ export const deleteCatalogueItemRoute = createRoute({
         },
       },
     },
+    params: z.object({
+      catalogueId: z.string(),
+      itemId: z.string(),
+    }),
   },
   responses: {
     [HttpStatusCodes.NO_CONTENT]: {
@@ -580,6 +603,9 @@ export const searchCatalogueItemsRoute = createRoute({
   request: {
     query: z.object({
       search: z.string().min(1),
+    }),
+    params: z.object({
+      catalogueId: z.string(),
     }),
   },
   responses: {
