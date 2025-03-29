@@ -6,7 +6,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc && tsc-alias",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.767.0",

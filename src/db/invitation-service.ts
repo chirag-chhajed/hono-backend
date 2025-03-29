@@ -1,11 +1,10 @@
 import { Service } from 'electrodb';
 
 import { dynamoClient, TABLE_NAME } from '@/db/client.js';
+import { CatalogueItemImageEntity } from '@/db/entities/catalogue-item-image.js';
+import { CatalogueItemEntity } from '@/db/entities/catalogue-item.js';
 import { InvitationEntity } from '@/db/entities/invitation.js';
 import { UserOrganizationEntity } from '@/db/entities/user-organization.js';
-
-import { CatalogueItemImageEntity } from './entities/catalogue-item-image.js';
-import { CatalogueItemEntity } from './entities/catalogue-item.js';
 
 export const InvitationService = new Service(
   {
