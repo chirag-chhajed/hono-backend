@@ -457,6 +457,70 @@ export const deleteCatalogueItemRoute = createRoute({
   ] as const,
 });
 
+export const searchCataloguesRoute = createRoute({
+  method: 'get',
+  tags: ['Catalogue'],
+  path: '/catalogue/search',
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      search: z.string().min(1),
+    }),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({
+        items: z.array(z.object({})),
+
+      }),
+      'Catalogues searched successfully',
+    ),
+  },
+  middlewares: [authenticate, requireOrganization] as const,
+});
+
+export const searchAllCatalogueItemsRoute = createRoute({
+  method: 'get',
+  tags: ['Catalogue'],
+  path: '/catalogue/search-items',
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      search: z.string().min(1),
+    }),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({
+        items: z.array(z.object({})),
+      }),
+      'Catalogues searched successfully',
+    ),
+  },
+  middlewares: [authenticate, requireOrganization] as const,
+});
+
+export const searchCatalogueItemsRoute = createRoute({
+  method: 'get',
+  tags: ['Catalogue'],
+  path: '/catalogue/search-items/{catalogueId}',
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      search: z.string().min(1),
+    }),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({
+        items: z.array(z.object({})),
+      }),
+      'Catalogues searched successfully',
+    ),
+  },
+  middlewares: [authenticate, requireOrganization] as const,
+});
+
 export type CreateCatalogueRoute = typeof createCatalogueRoute;
 export type GetCataloguesRoute = typeof getCataloguesRoute;
 export type CreateCatalogueItemRoute = typeof createCatalogueItemRoute;
@@ -469,3 +533,6 @@ export type UpdateCatalogueRoute = typeof updateCatalogueRoute;
 export type DeleteCatalogueRoute = typeof deleteCatalogueRoute;
 export type UpdateCatalogueItemRoute = typeof updateCatalogueItemRoute;
 export type DeleteCatalogueItemRoute = typeof deleteCatalogueItemRoute;
+export type SearchCataloguesRoute = typeof searchCataloguesRoute;
+export type SearchAllCatalogueItemsRoute = typeof searchAllCatalogueItemsRoute;
+export type SearchCatalogueItemsRoute = typeof searchCatalogueItemsRoute;

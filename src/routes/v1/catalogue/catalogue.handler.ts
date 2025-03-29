@@ -16,6 +16,9 @@ import type {
   DeleteCatalogueRoute,
   GetCatalogueItemsRoute,
   GetCataloguesRoute,
+  SearchAllCatalogueItemsRoute,
+  SearchCatalogueItemsRoute,
+  SearchCataloguesRoute,
   UpdateCatalogueItemRoute,
   UpdateCatalogueRoute,
 } from '@/routes/v1/catalogue/catalogue.routes.js';
@@ -554,4 +557,48 @@ export const deleteCatalogueItem: AppRouteHandler<DeleteCatalogueItemRoute> = as
   ]).go();
 
   return c.newResponse(null, HttpStatusCodes.NO_CONTENT);
+};
+
+export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (c) => {
+  const { search } = c.req.valid('query');
+  const { organizationId } = c.get('jwtPayload');
+
+  const catalogues = await CatalogueEntity.query.byOrgId({
+    orgId: organizationId,
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} || ${contains(description, search)}`).go();
+
+  return c.json({
+    items: catalogues.data,
+  }, HttpStatusCodes.OK);
+};
+
+export const searchAllCatalogueItems: AppRouteHandler<SearchAllCatalogueItemsRoute> = async (c) => {
+  const { search } = c.req.valid('query');
+  const { organizationId } = c.get('jwtPayload');
+
+  const items = await CatalogueItemEntity.query.byOrganization({
+    orgId: organizationId,
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} || ${contains(description, search)}`).go({
+    order: 'desc',
+  });
+
+  return c.json({
+    items: items.data,
+  }, HttpStatusCodes.OK);
+};
+
+export const searchCatalogueItems: AppRouteHandler<SearchCatalogueItemsRoute> = async (c) => {
+  const { search } = c.req.valid('query');
+  const { catalogueId } = c.req.param();
+  const { organizationId } = c.get('jwtPayload');
+
+  const items = await CatalogueItemEntity.query.primary({
+    catalogueId,
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} || ${contains(description, search)}`).go({
+    order: 'desc',
+  }).then(items => items.data.filter(item => item.orgId === organizationId));
+
+  return c.json({
+    items,
+  }, HttpStatusCodes.OK);
 };
