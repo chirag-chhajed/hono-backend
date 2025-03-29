@@ -1,64 +1,65 @@
-import { Entity } from "electrodb";
-import { dynamoClient, TABLE_NAME } from "@/db/client.js";
-import { nanoid } from "nanoid";
+import { Entity } from 'electrodb';
+import { nanoid } from 'nanoid';
+
+import { dynamoClient, TABLE_NAME } from '@/db/client.js';
 
 const CatalogueItemEntity = new Entity(
   {
     model: {
-      entity: "catalogueItem",
-      version: "1",
-      service: "app",
+      entity: 'catalogueItem',
+      version: '1',
+      service: 'app',
     },
     attributes: {
-      itemId: { type: "string", required: true, default: () => nanoid(32) },
-      catalogueId: { type: "string", required: true },
-      orgId: { type: "string", required: true },
-      name: { type: "string", required: true },
-      description: { type: "string" },
-      price: { type: "number", required: true },
-      metadata: { type: "any" }, // JSON object
+      itemId: { type: 'string', required: true, default: () => nanoid(32) },
+      catalogueId: { type: 'string', required: true },
+      orgId: { type: 'string', required: true },
+      name: { type: 'string', required: true },
+      description: { type: 'string' },
+      price: { type: 'number', required: true },
+      metadata: { type: 'any' }, // JSON object
       createdAt: {
-        type: "number",
+        type: 'number',
         required: true,
         default: () => Date.now(),
         readOnly: true,
         set: () => Date.now(),
       },
       updatedAt: {
-        type: "number",
+        type: 'number',
         required: true,
         default: () => Date.now(),
-        watch: "*",
+        watch: '*',
         set: () => Date.now(),
       },
-      deletedAt: { type: "number" },
+      deletedAt: { type: 'number' },
       image: {
-        type: "map",
+        type: 'map',
         required: true,
         properties: {
-          imageUrl: { type: "string", required: true },
-          blurhash: { type: "string" },
-          uploadedAt: { type: "number", default: () => Date.now() },
+          imageUrl: { type: 'string', required: true },
+          blurhash: { type: 'string' },
+          uploadedAt: { type: 'number', default: () => Date.now() },
         },
       },
     },
     indexes: {
       primary: {
         pk: {
-          field: "pk",
-          composite: ["catalogueId"],
+          field: 'pk',
+          composite: ['catalogueId'],
         },
         sk: {
-          field: "sk",
-          composite: ["createdAt", "itemId"],
+          field: 'sk',
+          composite: ['createdAt', 'itemId'],
         },
       },
       byPrice: {
-        index: "gsi1",
-        pk: { field: "gsi1pk", composite: ["catalogueId"] },
+        index: 'gsi1',
+        pk: { field: 'gsi1pk', composite: ['catalogueId'] },
         sk: {
-          field: "gsi1sk",
-          composite: ["price", "createdAt"],
+          field: 'gsi1sk',
+          composite: ['price', 'createdAt'],
         },
       },
     },
@@ -66,7 +67,7 @@ const CatalogueItemEntity = new Entity(
   {
     client: dynamoClient,
     table: TABLE_NAME,
-  }
+  },
 );
 
 export { CatalogueItemEntity };

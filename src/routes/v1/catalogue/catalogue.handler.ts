@@ -1,28 +1,30 @@
-import { CatalogueEntity } from "@/db/entities/catalogue.js";
-import { catalogueItemService } from "@/db/invitation-service.js";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
-import type { AppRouteHandler } from "@/lib/types.js";
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { encode } from 'blurhash';
+import { nanoid } from 'nanoid';
+import sharp from 'sharp';
+
+import type { AppRouteHandler } from '@/lib/types.js';
 import type {
-  CreateCatalogueRoute,
   CreateCatalogueItemRoute,
-  GetCataloguesRoute,
+  CreateCatalogueRoute,
   GetCatalogueItemsRoute,
-} from "@/routes/v1/catalogue/catalogue.routes.js";
-import { nanoid } from "nanoid";
-import sharp from "sharp";
-import { encode } from "blurhash";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { env } from "@/env.js";
-import { s3Client } from "@/lib/s3Client.js";
-import { CatalogueItemEntity } from "@/db/entities/catalogue-item.js";
-import { CatalogueItemImageEntity } from "@/db/entities/catalogue-item-image.js";
+  GetCataloguesRoute,
+} from '@/routes/v1/catalogue/catalogue.routes.js';
+
+import { CatalogueItemImageEntity } from '@/db/entities/catalogue-item-image.js';
+import { CatalogueItemEntity } from '@/db/entities/catalogue-item.js';
+import { CatalogueEntity } from '@/db/entities/catalogue.js';
+import { catalogueItemService } from '@/db/invitation-service.js';
+import { env } from '@/env.js';
+import * as HttpStatusCodes from '@/lib/http-status-code.js';
+import { s3Client } from '@/lib/s3Client.js';
 
 export const createCatalogue: AppRouteHandler<CreateCatalogueRoute> = async (
-  c
+  c,
 ) => {
-  const { name, description } = c.req.valid("json");
+  const { name, description } = c.req.valid('json');
 
-  const { id: userId, organizationId } = c.get("jwtPayload");
+  const { id: userId, organizationId } = c.get('jwtPayload');
 
   const catalogue = await CatalogueEntity.create({
     orgId: organizationId,
@@ -35,8 +37,8 @@ export const createCatalogue: AppRouteHandler<CreateCatalogueRoute> = async (
 };
 
 export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
-  const { cursor, order = "desc" } = c.req.valid("query");
-  const { organizationId } = c.get("jwtPayload");
+  const { cursor, order = 'desc' } = c.req.valid('query');
+  const { organizationId } = c.get('jwtPayload');
 
   const catalogues = await CatalogueEntity.query
     .primary({
@@ -46,11 +48,11 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
     .go({
       cursor,
       limit: 20,
-      order: order,
+      order,
     });
 
   const images = await Promise.all(
-    catalogues.data.map((catalogue) =>
+    catalogues.data.map(async catalogue =>
       CatalogueItemImageEntity.query
         .primary({
           catalogueId: catalogue.catalogueId,
@@ -58,17 +60,17 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
         .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
         .go({
           limit: 5,
-          order: "desc",
-        })
-    )
+          order: 'desc',
+        }),
+    ),
   );
 
   const result = catalogues.data.map((catalogue) => {
-    const catalogueImages =
-      images.find((imgResponse) =>
+    const catalogueImages
+      = images.find(imgResponse =>
         imgResponse.data.some(
-          (img) => img.catalogueId === catalogue.catalogueId
-        )
+          img => img.catalogueId === catalogue.catalogueId,
+        ),
       )?.data || [];
 
     return {
@@ -82,18 +84,18 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
       items: result,
       nextCursor: catalogues.cursor,
     },
-    HttpStatusCodes.OK
+    HttpStatusCodes.OK,
   );
 };
 
 export const createCatalogueItem: AppRouteHandler<
   CreateCatalogueItemRoute
 > = async (c) => {
-  const { name, price, description } = c.req.valid("query");
-  const { organizationId } = c.get("jwtPayload");
-  const hello = c.req.valid("form");
+  const { name, price, description } = c.req.valid('query');
+  const { organizationId } = c.get('jwtPayload');
+  const hello = c.req.valid('form');
   const fileArray = Object.values(hello);
-  const catalogueId = c.req.param("catalogueId");
+  const catalogueId = c.req.param('catalogueId');
 
   const catalogue = await CatalogueEntity.query
     .primary({
@@ -107,8 +109,8 @@ export const createCatalogueItem: AppRouteHandler<
 
   if (catalogue.data.length === 0) {
     return c.json(
-      { message: "Catalogue not found" },
-      HttpStatusCodes.NOT_FOUND
+      { message: 'Catalogue not found' },
+      HttpStatusCodes.NOT_FOUND,
     );
   }
 
@@ -118,14 +120,14 @@ export const createCatalogueItem: AppRouteHandler<
     fileArray.map(async (file) => {
       try {
         const fileName = `${organizationId}/${nanoid()}.${
-          file.type.split("/")[1]
+          file.type.split('/')[1]
         }`;
         const buffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(buffer);
 
         const { data, info } = await sharp(uint8Array)
           .resize(32, 32, {
-            fit: "inside",
+            fit: 'inside',
           })
           .toBuffer({ resolveWithObject: true });
 
@@ -134,7 +136,7 @@ export const createCatalogueItem: AppRouteHandler<
           info.width,
           info.height,
           4,
-          4
+          4,
         );
 
         const command = new PutObjectCommand({
@@ -142,7 +144,7 @@ export const createCatalogueItem: AppRouteHandler<
           Key: fileName,
           Body: uint8Array,
           ContentType: file.type,
-          ACL: "public-read",
+          ACL: 'public-read',
         });
 
         await s3Client.send(command);
@@ -154,17 +156,18 @@ export const createCatalogueItem: AppRouteHandler<
           blurhash,
           catalogueId,
         };
-      } catch (error) {
+      }
+      catch (error) {
         c.var.logger.error(
           `Failed to process image: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
         );
         throw new Error(`Failed to process image: ${file.name}`);
       }
-    })
-  ).catch((error) => {
-    throw new Error(`Failed to process images: ${error.message}`);
+    }),
+  ).catch(() => {
+    throw new Error(`Failed to process images`);
   });
 
   await catalogueItemService.transaction
@@ -183,20 +186,20 @@ export const createCatalogueItem: AppRouteHandler<
           },
         })
         .commit(),
-      ...images.map((img) => catalogueImages.create(img).commit()),
+      ...images.map(img => catalogueImages.create(img).commit()),
     ])
     .go();
 
   return c.json(
-    { message: "File uploaded successfully" },
-    HttpStatusCodes.CREATED
+    { message: 'File uploaded successfully' },
+    HttpStatusCodes.CREATED,
   );
 };
 
 export const getCatalogueItems: AppRouteHandler<
   GetCatalogueItemsRoute
 > = async (c) => {
-  const { cursor, order = "desc", priceSort } = c.req.valid("query");
+  const { cursor, order = 'desc', priceSort } = c.req.valid('query');
   const { catalogueId } = c.req.param();
 
   const query = priceSort
@@ -216,6 +219,6 @@ export const getCatalogueItems: AppRouteHandler<
       items: items.data,
       nextCursor: items.cursor,
     },
-    HttpStatusCodes.OK
+    HttpStatusCodes.OK,
   );
 };

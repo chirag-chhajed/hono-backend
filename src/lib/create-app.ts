@@ -1,13 +1,17 @@
-import { UNPROCESSABLE_ENTITY } from "@/lib/http-status-code.js";
-import { pinoLogger } from "@/lib/pino-logger.js";
-import type { AppBindings } from "@/lib/types.js";
-import notFound from "@/middleware/not-found.js";
-import onError from "@/middleware/on-error.js";
-import serveEmojiFavicon from "@/middleware/server-emoji-favicon.js";
-import { type Hook, OpenAPIHono } from "@hono/zod-openapi";
-import { cert, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-import { env } from "@/env.js";
+import type { Hook } from '@hono/zod-openapi';
+
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { cert, initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+
+import type { AppBindings } from '@/lib/types.js';
+
+import { env } from '@/env.js';
+import { UNPROCESSABLE_ENTITY } from '@/lib/http-status-code.js';
+import { pinoLogger } from '@/lib/pino-logger.js';
+import notFound from '@/middleware/not-found.js';
+import onError from '@/middleware/on-error.js';
+import serveEmojiFavicon from '@/middleware/server-emoji-favicon.js';
 
 export function createRouter() {
   const router = new OpenAPIHono<AppBindings>({
@@ -24,7 +28,7 @@ const defaultHook: Hook<any, any, any, any> = (result, c) => {
         success: result.success,
         error: result.error,
       },
-      UNPROCESSABLE_ENTITY
+      UNPROCESSABLE_ENTITY,
     );
   }
 };
@@ -35,7 +39,7 @@ export default function createApp() {
     defaultHook,
   });
 
-  app.use(serveEmojiFavicon("😀"));
+  app.use(serveEmojiFavicon('😀'));
   app.use(pinoLogger());
   app.notFound(notFound);
   app.onError(onError);

@@ -1,7 +1,8 @@
-import { Service } from "electrodb";
-import { OrganizationEntity } from "./entities/organization.js";
-import { UserOrganizationEntity } from "./entities/user-organization.js";
-import { dynamoClient, TABLE_NAME } from "./client.js";
+import { Service } from 'electrodb';
+
+import { dynamoClient, TABLE_NAME } from './client.js';
+import { OrganizationEntity } from './entities/organization.js';
+import { UserOrganizationEntity } from './entities/user-organization.js';
 
 export const organizationService = new Service(
   {
@@ -11,5 +12,5 @@ export const organizationService = new Service(
   {
     table: TABLE_NAME,
     client: dynamoClient,
-  }
+  },
 );

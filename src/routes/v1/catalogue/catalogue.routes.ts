@@ -1,11 +1,12 @@
-import { createRoute, z } from "@hono/zod-openapi";
-import { jsonContent } from "@/lib/openapi/helpers/json-content.js";
+import { createRoute, z } from '@hono/zod-openapi';
+
+import * as HttpStatusCodes from '@/lib/http-status-code.js';
+import { jsonContent } from '@/lib/openapi/helpers/json-content.js';
 import {
   authenticate,
   requireOrganization,
-} from "@/middleware/authenticate.js";
-import { requirePermission } from "@/middleware/require-permission.js";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
+} from '@/middleware/authenticate.js';
+import { requirePermission } from '@/middleware/require-permission.js';
 
 const createCatalogueSchema = z.object({
   name: z.string().min(1),
@@ -13,13 +14,13 @@ const createCatalogueSchema = z.object({
 });
 
 export const createCatalogueRoute = createRoute({
-  method: "post",
-  tags: ["Catalogue"],
-  path: "/catalogue",
+  method: 'post',
+  tags: ['Catalogue'],
+  path: '/catalogue',
   request: {
     body: {
       content: {
-        "application/json": {
+        'application/json': {
           schema: createCatalogueSchema,
         },
       },
@@ -36,25 +37,25 @@ export const createCatalogueRoute = createRoute({
         createdAt: z.number(),
         updatedAt: z.number(),
       }),
-      "Catalogue created successfully"
+      'Catalogue created successfully',
     ),
   },
   middlewares: [
     authenticate,
     requireOrganization,
-    requirePermission("create:catalogue"),
+    requirePermission('create:catalogue'),
   ] as const,
 });
 
 const getCataloguesSchema = z.object({
   cursor: z.string().optional(),
-  order: z.enum(["asc", "desc"]).optional(),
+  order: z.enum(['asc', 'desc']).optional(),
 });
 
 export const getCataloguesRoute = createRoute({
-  method: "get",
-  tags: ["Catalogue"],
-  path: "/catalogue",
+  method: 'get',
+  tags: ['Catalogue'],
+  path: '/catalogue',
   request: {
     query: getCataloguesSchema,
   },
@@ -70,41 +71,41 @@ export const getCataloguesRoute = createRoute({
             createdBy: z.string(),
             createdAt: z.number(),
             updatedAt: z.number(),
-          })
+          }),
         ),
         nextCursor: z.string().nullable(),
       }),
-      "List of catalogues retrieved successfully"
+      'List of catalogues retrieved successfully',
     ),
   },
   middlewares: [authenticate, requireOrganization] as const,
 });
 
 export const createCatalogueItemRoute = createRoute({
-  method: "post",
-  tags: ["Catalogue"],
-  path: "/catalogue/{catalogueId}",
+  method: 'post',
+  tags: ['Catalogue'],
+  path: '/catalogue/{catalogueId}',
   request: {
     body: {
       content: {
-        "multipart/form-data": {
+        'multipart/form-data': {
           schema: z
             .record(
               z.string().min(1),
               z
-                .instanceof(File, { message: "Please upload a file." })
-                .refine((f) => f.size <= 5 * 1024 * 1024, {
-                  message: "Max 5 MB upload size.",
+                .instanceof(File, { message: 'Please upload a file.' })
+                .refine(f => f.size <= 5 * 1024 * 1024, {
+                  message: 'Max 5 MB upload size.',
                 })
-                .refine((f) => f.type.includes("image/"), {
-                  message: "Only images are allowed",
-                })
+                .refine(f => f.type.includes('image/'), {
+                  message: 'Only images are allowed',
+                }),
             )
-            .refine((files) => Object.keys(files).length <= 1, {
-              message: "Maximum 1 file allowed",
+            .refine(files => Object.keys(files).length <= 1, {
+              message: 'Maximum 1 file allowed',
             })
-            .refine((files) => Object.keys(files).length >= 1, {
-              message: "Minimum 1 file required",
+            .refine(files => Object.keys(files).length >= 1, {
+              message: 'Minimum 1 file required',
             }),
         },
       },
@@ -113,10 +114,10 @@ export const createCatalogueItemRoute = createRoute({
       name: z.string().min(1).max(100),
       description: z.string().min(1).max(500).optional(),
       price: z.coerce
-        .number({ message: "Enter a valid price" })
-        .positive("Price must be greater than 0")
-        .multipleOf(0.01, "Price can only have up to 2 decimal places")
-        .min(0.01, "Minimum price is 0.01"),
+        .number({ message: 'Enter a valid price' })
+        .positive('Price must be greater than 0')
+        .multipleOf(0.01, 'Price can only have up to 2 decimal places')
+        .min(0.01, 'Minimum price is 0.01'),
     }),
   },
   responses: {
@@ -124,29 +125,29 @@ export const createCatalogueItemRoute = createRoute({
       z.object({
         message: z.string(),
       }),
-      "Catalogue item created successfully"
+      'Catalogue item created successfully',
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      "Catalogue not found"
+      'Catalogue not found',
     ),
   },
   middlewares: [
     authenticate,
     requireOrganization,
-    requirePermission("create:catalogue"),
+    requirePermission('create:catalogue'),
   ] as const,
 });
 
 export const getCatalogueItems = createRoute({
-  method: "get",
-  tags: ["Catalogue"],
-  path: "/catalogue/{catalogueId}",
+  method: 'get',
+  tags: ['Catalogue'],
+  path: '/catalogue/{catalogueId}',
   request: {
     query: getCataloguesSchema.extend({
-      priceSort: z.enum(["asc", "desc"]).optional(),
+      priceSort: z.enum(['asc', 'desc']).optional(),
     }),
   },
   responses: {
@@ -155,7 +156,7 @@ export const getCatalogueItems = createRoute({
         items: z.array(z.object({})),
         nextCursor: z.string().nullable(),
       }),
-      "Catalogue items retrieved successfully"
+      'Catalogue items retrieved successfully',
     ),
   },
   middlewares: [authenticate, requireOrganization] as const,

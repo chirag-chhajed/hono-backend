@@ -1,11 +1,14 @@
-import { hasPermission, type Permission, type ROLE } from "@/lib/role.js";
-import type { AppBindings } from "@/lib/types.js";
-import type { Context, Next } from "hono";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
+import type { Context, Next } from 'hono';
 
-export const requirePermission = (permission: Permission) => {
+import type { Permission, ROLE } from '@/lib/role.js';
+import type { AppBindings } from '@/lib/types.js';
+
+import * as HttpStatusCodes from '@/lib/http-status-code.js';
+import { hasPermission } from '@/lib/role.js';
+
+export function requirePermission(permission: Permission) {
   return async (c: Context<AppBindings>, next: Next) => {
-    const { id, role } = c.get("jwtPayload");
+    const { id, role } = c.get('jwtPayload');
 
     const hasAccess = hasPermission({ id, role: role as ROLE }, permission);
 
@@ -13,13 +16,13 @@ export const requirePermission = (permission: Permission) => {
       c.json(
         {
           success: false,
-          message: "You don't have permission to access this resource",
+          message: 'You don\'t have permission to access this resource',
         },
-        HttpStatusCodes.BAD_REQUEST
+        HttpStatusCodes.BAD_REQUEST,
       );
       return;
     }
 
     await next();
   };
-};
+}

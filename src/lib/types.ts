@@ -1,7 +1,7 @@
-import type { OpenAPIHono, RouteConfig, RouteHandler } from "@hono/zod-openapi";
-import type { PinoLogger } from "hono-pino";
+import type { OpenAPIHono, RouteConfig, RouteHandler } from '@hono/zod-openapi';
+import type { PinoLogger } from 'hono-pino';
 
-export type AppBindings = {
+export interface AppBindings {
   Variables: {
     logger: PinoLogger;
     jwtPayload: {
@@ -12,7 +12,7 @@ export type AppBindings = {
       role: string;
     };
   };
-};
+}
 
 export type AppOpenAPI = OpenAPIHono<AppBindings>;
 

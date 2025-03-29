@@ -1,29 +1,30 @@
-import { createRoute, z } from "@hono/zod-openapi";
-import { jsonContent } from "@/lib/openapi/helpers/json-content.js";
+import { createRoute, z } from '@hono/zod-openapi';
+
+import * as HttpStatusCodes from '@/lib/http-status-code.js';
+import { jsonContent } from '@/lib/openapi/helpers/json-content.js';
 import {
   authenticate,
   requireOrganization,
-} from "@/middleware/authenticate.js";
-import { requirePermission } from "@/middleware/require-permission.js";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
+} from '@/middleware/authenticate.js';
+import { requirePermission } from '@/middleware/require-permission.js';
 
 export const createInvitation = createRoute({
-  method: "post",
-  tags: ["Invitation"],
-  path: "/invitation",
+  method: 'post',
+  tags: ['Invitation'],
+  path: '/invitation',
   security: [{ bearerAuth: [] }],
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission("invite:user"),
+    requirePermission('invite:user'),
   ] as const,
   request: {
     body: {
       content: {
-        "application/json": {
+        'application/json': {
           schema: z
             .object({
-              role: z.enum(["admin", "editor", "viewer"]),
+              role: z.enum(['admin', 'editor', 'viewer']),
             })
             .strict(),
         },
@@ -38,23 +39,23 @@ export const createInvitation = createRoute({
         })
         .openapi({
           example: {
-            inviteCode: "1234567890",
+            inviteCode: '1234567890',
           },
         }),
-      "Invitation code"
+      'Invitation code',
     ),
   },
 });
 
 export const getInvitations = createRoute({
-  method: "get",
-  tags: ["Invitation"],
-  path: "/invitation",
+  method: 'get',
+  tags: ['Invitation'],
+  path: '/invitation',
   security: [{ bearerAuth: [] }],
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission("invite:user"),
+    requirePermission('invite:user'),
   ] as const,
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
@@ -67,22 +68,22 @@ export const getInvitations = createRoute({
           expiresAt: z.number(),
           usedBy: z.string().optional(),
           usedAt: z.number().optional(),
-        })
+        }),
       ),
-      "Invitation details"
+      'Invitation details',
     ),
   },
 });
 
 export const acceptInvitation = createRoute({
-  method: "post",
-  tags: ["Invitation"],
-  path: "/invitation/accept",
+  method: 'post',
+  tags: ['Invitation'],
+  path: '/invitation/accept',
   security: [{ bearerAuth: [] }],
   request: {
     body: {
       content: {
-        "application/json": {
+        'application/json': {
           schema: z.object({
             code: z.string().length(10),
           }),
@@ -95,19 +96,19 @@ export const acceptInvitation = createRoute({
       z.object({
         message: z.string(),
       }),
-      "Invitation accepted"
+      'Invitation accepted',
     ),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      "Already accepted"
+      'Already accepted',
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      "Invitation not found"
+      'Invitation not found',
     ),
   },
 });

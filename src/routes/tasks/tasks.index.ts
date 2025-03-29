@@ -1,6 +1,6 @@
-import { createRouter } from "@/lib/create-app.js";
-import * as handlers from "@/routes/tasks/tasks.handler.js";
-import * as routes from "@/routes/tasks/tasks.routes.js";
+import { createRouter } from '@/lib/create-app.js';
+import * as handlers from '@/routes/tasks/tasks.handler.js';
+import * as routes from '@/routes/tasks/tasks.routes.js';
 
 const router = createRouter();
 

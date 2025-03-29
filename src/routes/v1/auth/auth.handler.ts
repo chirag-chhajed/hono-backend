@@ -1,38 +1,41 @@
-import type { AppRouteHandler } from "@/lib/types.js";
+import type { DecodedIdToken } from 'firebase-admin/auth';
+
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
+import { decode, verify } from 'hono/jwt';
+import { JwtTokenExpired } from 'hono/utils/jwt/types';
+
+import type { BaseTokenPayload, OrgTokenPayload } from '@/lib/generate-tokens.js';
+import type { AppRouteHandler } from '@/lib/types.js';
 import type {
   LoginRoute,
-  RefreshRoute,
   LogoutRoute,
-} from "@/routes/v1/auth/auth.routes.js";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
-import { UserEntity } from "@/db/entities/user.js";
+  RefreshRoute,
+} from '@/routes/v1/auth/auth.routes.js';
+
+import { UserEntity } from '@/db/entities/user.js';
+import { env } from '@/env.js';
+import { auth } from '@/lib/create-app.js';
 import {
   generateTokens,
-  type BaseTokenPayload,
-  type OrgTokenPayload,
-} from "@/lib/generate-tokens.js";
-import { setCookie, getCookie, deleteCookie } from "hono/cookie";
-import type { DecodedIdToken } from "firebase-admin/auth";
-import { auth } from "@/lib/create-app.js";
-import { verify, decode } from "hono/jwt";
-import { env } from "@/env.js";
-import { JwtTokenExpired } from "hono/utils/jwt/types";
+} from '@/lib/generate-tokens.js';
+import * as HttpStatusCodes from '@/lib/http-status-code.js';
 
 export const login: AppRouteHandler<LoginRoute> = async (c) => {
   try {
-    const { name, email, idToken } = c.req.valid("json");
+    const { name, email, idToken } = c.req.valid('json');
 
     let decodedToken: DecodedIdToken;
     try {
       decodedToken = await auth.verifyIdToken(idToken);
-    } catch (firebaseError) {
+    }
+    catch {
       return c.json(
         {
           success: false,
-          code: "FIREBASE_AUTH_ERROR",
-          message: "Invalid or expired Firebase token",
+          code: 'FIREBASE_AUTH_ERROR',
+          message: 'Invalid or expired Firebase token',
         },
-        HttpStatusCodes.UNAUTHORIZED
+        HttpStatusCodes.UNAUTHORIZED,
       );
     }
 
@@ -40,10 +43,10 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       return c.json(
         {
           success: false,
-          code: "EMAIL_MISMATCH",
-          message: "Token email does not match provided email",
+          code: 'EMAIL_MISMATCH',
+          message: 'Token email does not match provided email',
         },
-        HttpStatusCodes.UNAUTHORIZED
+        HttpStatusCodes.UNAUTHORIZED,
       );
     }
 
@@ -62,11 +65,13 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
         name,
         email,
       }).go();
-      if (!newUserResult.data) {
-        throw new Error("Failed to create user");
+
+      if (Object.keys(newUserResult.data).length === 0) {
+        throw new Error('Failed to create user');
       }
       finalUser = newUserResult.data;
-    } else {
+    }
+    else {
       finalUser = existingUserResult.data[0];
     }
 
@@ -76,10 +81,10 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       name: finalUser.name,
     });
 
-    setCookie(c, "refreshToken", refreshToken, {
+    setCookie(c, 'refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60,
     });
 
@@ -92,31 +97,32 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
           email: finalUser.email,
         },
       },
-      HttpStatusCodes.OK
+      HttpStatusCodes.OK,
     );
-  } catch (error) {
+  }
+  catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
         success: false,
-        message: "An unexpected error occurred during authentication",
+        message: 'An unexpected error occurred during authentication',
       },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
   }
 };
 
 export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
   try {
-    const { organizationId } = c.req.valid("query");
-    const refreshToken = getCookie(c, "refreshToken");
+    const { organizationId } = c.req.valid('query');
+    const refreshToken = getCookie(c, 'refreshToken');
 
     if (!refreshToken) {
       return c.newResponse(null, HttpStatusCodes.NO_CONTENT);
     }
 
     try {
-      await verify(refreshToken, env.JWT_REFRESH_SECRET_KEY, "HS256");
+      await verify(refreshToken, env.JWT_REFRESH_SECRET_KEY, 'HS256');
       const { payload } = decode(refreshToken);
 
       const tokenPayload = {
@@ -129,13 +135,13 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
         }),
       } as BaseTokenPayload | OrgTokenPayload;
 
-      const { accessToken, refreshToken: newRefreshToken } =
-        await generateTokens(tokenPayload);
+      const { accessToken, refreshToken: newRefreshToken }
+        = await generateTokens(tokenPayload);
 
-      setCookie(c, "refreshToken", newRefreshToken, {
+      setCookie(c, 'refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "lax",
+        sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60,
       });
 
@@ -148,56 +154,59 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
             email: tokenPayload.email,
           },
         },
-        HttpStatusCodes.OK
+        HttpStatusCodes.OK,
       );
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof JwtTokenExpired) {
         return c.json(
           {
             success: false,
-            message: "Refresh token expired",
+            message: 'Refresh token expired',
           },
-          HttpStatusCodes.FORBIDDEN
+          HttpStatusCodes.FORBIDDEN,
         );
       }
       return c.json(
         {
           success: false,
-          message: "Invalid refresh token",
+          message: 'Invalid refresh token',
         },
-        HttpStatusCodes.UNAUTHORIZED
+        HttpStatusCodes.UNAUTHORIZED,
       );
     }
-  } catch (error) {
+  }
+  catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
         success: false,
-        message: "An unexpected error occurred",
+        message: 'An unexpected error occurred',
       },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
   }
 };
 
 export const logout: AppRouteHandler<LogoutRoute> = async (c) => {
   try {
-    deleteCookie(c, "refreshToken");
+    deleteCookie(c, 'refreshToken');
     return c.json(
       {
         success: true,
-        message: "Successfully logged out",
+        message: 'Successfully logged out',
       },
-      HttpStatusCodes.OK
+      HttpStatusCodes.OK,
     );
-  } catch (error) {
+  }
+  catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
         success: false,
-        message: "An unexpected error occurred",
+        message: 'An unexpected error occurred',
       },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
   }
 };

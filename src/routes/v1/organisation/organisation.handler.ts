@@ -1,20 +1,22 @@
-import { UserOrganizationEntity } from "@/db/entities/user-organization.js";
-import type { AppRouteHandler } from "@/lib/types.js";
+import { nanoid } from 'nanoid';
+
+import type { AppRouteHandler } from '@/lib/types.js';
 import type {
   CreateOrganisationRoute,
   GetOrganisationsRoute,
   RemoveUserFromOrganisationRoute,
-} from "@/routes/v1/organisation/organisation.routes.js";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
-import { organizationService } from "@/db/organization-service.js";
-import { nanoid } from "nanoid";
+} from '@/routes/v1/organisation/organisation.routes.js';
+
+import { UserOrganizationEntity } from '@/db/entities/user-organization.js';
+import { organizationService } from '@/db/organization-service.js';
+import * as HttpStatusCodes from '@/lib/http-status-code.js';
 
 export const createOrganisation: AppRouteHandler<
   CreateOrganisationRoute
 > = async (c) => {
   try {
-    const { name, description } = c.req.valid("json");
-    const { id } = c.get("jwtPayload");
+    const { name, description } = c.req.valid('json');
+    const { id } = c.get('jwtPayload');
     const orgId = nanoid(32);
     await organizationService.transaction
       .write(({ organisation, userOrganization }) => [
@@ -29,7 +31,7 @@ export const createOrganisation: AppRouteHandler<
         userOrganization
           .create({
             orgId,
-            role: "admin",
+            role: 'admin',
             userId: id,
             orgName: name,
             orgDescription: description,
@@ -40,32 +42,33 @@ export const createOrganisation: AppRouteHandler<
 
     return c.json(
       {
-        message: "Organisation created successfully",
+        message: 'Organisation created successfully',
       },
-      HttpStatusCodes.CREATED
+      HttpStatusCodes.CREATED,
     );
-  } catch (error) {
+  }
+  catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
-        message: "An unexpected error occurred during organisation creation",
+        message: 'An unexpected error occurred during organisation creation',
       },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
   }
 };
 
 export const getOrganisations: AppRouteHandler<GetOrganisationsRoute> = async (
-  c
+  c,
 ) => {
   try {
-    const { id } = c.get("jwtPayload");
+    const { id } = c.get('jwtPayload');
     const orgIds = await UserOrganizationEntity.query
       .byUser({
         userId: id,
       })
       .go();
-    const organisations = orgIds.data.map((org) => ({
+    const organisations = orgIds.data.map(org => ({
       name: org.orgName,
       description: org.orgDescription,
       orgId: org.orgId,
@@ -73,13 +76,14 @@ export const getOrganisations: AppRouteHandler<GetOrganisationsRoute> = async (
     }));
 
     return c.json(organisations, HttpStatusCodes.OK);
-  } catch (error) {
+  }
+  catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
-        message: "An unexpected error occurred during organisation retrieval",
+        message: 'An unexpected error occurred during organisation retrieval',
       },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
   }
 };
@@ -88,22 +92,23 @@ export const removeUserFromOrganisation: AppRouteHandler<
   RemoveUserFromOrganisationRoute
 > = async (c) => {
   try {
-    const { userId } = c.req.valid("param");
-    const { organizationId } = c.get("jwtPayload");
+    const { userId } = c.req.valid('param');
+    const { organizationId } = c.get('jwtPayload');
 
     await UserOrganizationEntity.delete({
-      userId: userId,
+      userId,
       orgId: organizationId,
     }).go();
 
     return c.newResponse(null, HttpStatusCodes.NO_CONTENT);
-  } catch (error) {
+  }
+  catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
-        message: "An unexpected error occurred during user removal",
+        message: 'An unexpected error occurred during user removal',
       },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
   }
 };

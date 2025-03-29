@@ -1,16 +1,17 @@
-import { createRoute, z } from "@hono/zod-openapi";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
-import { jsonContent } from "@/lib/openapi/helpers/json-content.js";
+import { createRoute, z } from '@hono/zod-openapi';
+
+import * as HttpStatusCodes from '@/lib/http-status-code.js';
+import { jsonContent } from '@/lib/openapi/helpers/json-content.js';
 import {
   authenticate,
   requireOrganization,
-} from "@/middleware/authenticate.js";
-import { requirePermission } from "@/middleware/require-permission.js";
+} from '@/middleware/authenticate.js';
+import { requirePermission } from '@/middleware/require-permission.js';
 
 export const getOrganisations = createRoute({
-  tags: ["Organisation"],
-  path: "/organisation",
-  method: "get",
+  tags: ['Organisation'],
+  path: '/organisation',
+  method: 'get',
   security: [{ bearerAuth: [] }],
   middleware: [authenticate] as const,
   responses: {
@@ -25,44 +26,44 @@ export const getOrganisations = createRoute({
           })
           .openapi({
             example: {
-              orgId: "rmtCk40CueaWfhQrzjYwr",
-              name: "Organisation 1",
-              description: "Organisation 1 description",
-              role: "admin",
+              orgId: 'rmtCk40CueaWfhQrzjYwr',
+              name: 'Organisation 1',
+              description: 'Organisation 1 description',
+              role: 'admin',
             },
-          })
+          }),
       ),
-      "Organisation details"
+      'Organisation details',
     ),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      "Internal server error during organisation retrieval"
+      'Internal server error during organisation retrieval',
     ),
   },
 });
 
 export const createOrganisation = createRoute({
-  tags: ["Organisation"],
-  path: "/organisation",
-  method: "post",
+  tags: ['Organisation'],
+  path: '/organisation',
+  method: 'post',
   security: [{ bearerAuth: [] }],
   middleware: [authenticate] as const,
   request: {
     body: {
       content: {
-        "application/json": {
+        'application/json': {
           schema: z.object({
             name: z
               .string()
               .trim()
-              .min(1, "Name must be minimum of 1 character")
-              .max(100, "Name must be maximum of 100 characters"),
+              .min(1, 'Name must be minimum of 1 character')
+              .max(100, 'Name must be maximum of 100 characters'),
             description: z
               .string()
               .trim()
-              .max(500, "Description must be maximum of 500 characters")
+              .max(500, 'Description must be maximum of 500 characters')
               .optional(),
           }),
         },
@@ -74,26 +75,26 @@ export const createOrganisation = createRoute({
       z.object({
         message: z.string(),
       }),
-      "Organisation created successfully"
+      'Organisation created successfully',
     ),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      "Internal server error during organisation creation"
+      'Internal server error during organisation creation',
     ),
   },
 });
 
 export const removeUserFromOrganisation = createRoute({
-  tags: ["Organisation"],
-  path: "/organisation/remove-user/{userId}",
-  method: "delete",
+  tags: ['Organisation'],
+  path: '/organisation/remove-user/{userId}',
+  method: 'delete',
   security: [{ bearerAuth: [] }],
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission("remove:user"),
+    requirePermission('remove:user'),
   ] as const,
   request: {
     params: z.object({
@@ -102,13 +103,13 @@ export const removeUserFromOrganisation = createRoute({
   },
   responses: {
     [HttpStatusCodes.NO_CONTENT]: {
-      description: "User removed from organisation successfully",
+      description: 'User removed from organisation successfully',
     },
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      "Internal server error during user removal"
+      'Internal server error during user removal',
     ),
   },
 });
