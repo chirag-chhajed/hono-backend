@@ -23,14 +23,6 @@ export const getOrganisations = createRoute({
             name: z.string(),
             description: z.string().optional(),
             role: z.string(),
-          })
-          .openapi({
-            example: {
-              orgId: 'rmtCk40CueaWfhQrzjYwr',
-              name: 'Organisation 1',
-              description: 'Organisation 1 description',
-              role: 'admin',
-            },
           }),
       ),
       'Organisation details',

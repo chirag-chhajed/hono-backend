@@ -3,21 +3,21 @@ import { sign } from 'hono/jwt';
 
 import { env } from '@/env.js';
 
-export interface BaseTokenPayload {
+export type BaseTokenPayload = {
   id: string;
   email: string;
   name: string;
-}
+};
 
 export type OrgTokenPayload = BaseTokenPayload & {
   organizationId: string;
   role: 'admin' | 'editor' | 'viewer';
 };
 
-interface GeneratedTokens {
+type GeneratedTokens = {
   accessToken: string;
   refreshToken: string;
-}
+};
 
 export async function generateTokens(payload: BaseTokenPayload | OrgTokenPayload): Promise<GeneratedTokens> {
   // Access token configuration

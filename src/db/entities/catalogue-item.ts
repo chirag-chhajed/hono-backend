@@ -62,6 +62,11 @@ const CatalogueItemEntity = new Entity(
           composite: ['price', 'createdAt'],
         },
       },
+      byOrganization: {
+        index: 'gsi2',
+        pk: { field: 'gsi2pk', composite: ['orgId'] },
+        sk: { field: 'gsi2sk', composite: ['createdAt'] },
+      },
     },
   },
   {

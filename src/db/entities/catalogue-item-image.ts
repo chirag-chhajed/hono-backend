@@ -26,14 +26,20 @@ const CatalogueItemImageEntity = new Entity(
       deletedAt: { type: 'number' },
     },
     indexes: {
-      // Primary index: All images for an item
       primary: {
         pk: {
           field: 'pk',
+          composite: ['itemId'],
+        },
+      },
+      byCatalogueId: {
+        index: 'gsi1',
+        pk: {
+          field: 'gsi1pk',
           composite: ['catalogueId'],
         },
         sk: {
-          field: 'sk',
+          field: 'gsi1sk',
           composite: ['createdAt', 'imageId'],
         },
       },

@@ -39,10 +39,21 @@ const CatalogueEntity = new Entity({
     primary: {
       pk: {
         field: 'pk',
-        composite: ['orgId'],
+        composite: ['catalogueId'],
       },
       sk: {
         field: 'sk',
+        composite: ['createdAt', 'orgId'],
+      },
+    },
+    byOrgId: {
+      index: 'gsi1',
+      pk: {
+        field: 'gsi1pk',
+        composite: ['orgId'],
+      },
+      sk: {
+        field: 'gsi1sk',
         composite: ['createdAt', 'catalogueId'],
       },
     },

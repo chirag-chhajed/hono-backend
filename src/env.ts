@@ -41,6 +41,7 @@ envVariables.parse(process.env);
 declare global {
   // eslint-disable-next-line ts/no-namespace
   namespace NodeJS {
+    // eslint-disable-next-line ts/consistent-type-definitions
     interface ProcessEnv extends z.infer<typeof envVariables> {}
   }
 }
