@@ -36,14 +36,12 @@ export const createCatalogue: AppRouteHandler<CreateCatalogueRoute> = async (
   c,
 ) => {
   const { name, description } = c.req.valid('json');
-
-  const { id: userId, organizationId } = c.get('jwtPayload');
-
+  const jwtPayload = c.get('jwtPayload');
   const catalogue = await CatalogueEntity.create({
-    orgId: organizationId,
+    orgId: jwtPayload.organizationId,
     name,
     description,
-    createdBy: userId,
+    createdBy: jwtPayload.id,
   }).go();
 
   return c.json(catalogue.data, HttpStatusCodes.CREATED);

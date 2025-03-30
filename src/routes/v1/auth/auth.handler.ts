@@ -12,6 +12,7 @@ import type {
   RefreshRoute,
 } from '@/routes/v1/auth/auth.routes.js';
 
+import { UserOrganizationEntity } from '@/db/entities/user-organization.js';
 import { UserEntity } from '@/db/entities/user.js';
 import { env } from '@/env.js';
 import { auth } from '@/lib/create-app.js';
@@ -124,6 +125,23 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
     try {
       await verify(refreshToken, env.JWT_REFRESH_SECRET_KEY, 'HS256');
       const { payload } = decode(refreshToken);
+      let orgDetails;
+
+      if (organizationId) {
+        orgDetails = await UserOrganizationEntity.get({
+          orgId: organizationId,
+          userId: payload.id as string,
+        }).go();
+        if (!orgDetails.data) {
+          return c.json(
+            {
+              success: false,
+              message: 'Organization not found',
+            },
+            HttpStatusCodes.BAD_REQUEST,
+          );
+        }
+      }
 
       const tokenPayload = {
         id: payload.id,
@@ -131,7 +149,7 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
         name: payload.name,
         ...(organizationId && {
           organizationId,
-          role: payload.role,
+          role: orgDetails?.data?.role,
         }),
       } as BaseTokenPayload | OrgTokenPayload;
 
@@ -148,11 +166,7 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
       return c.json(
         {
           accessToken,
-          user: {
-            id: tokenPayload.id,
-            name: tokenPayload.name,
-            email: tokenPayload.email,
-          },
+          user: tokenPayload,
         },
         HttpStatusCodes.OK,
       );

@@ -26,6 +26,11 @@ export const createCatalogueRoute = createRoute({
       },
     },
   },
+  middleware: [
+    authenticate,
+    requireOrganization,
+    requirePermission('create:catalogue'),
+  ] as const,
   security: [{ bearerAuth: [] }],
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
@@ -41,11 +46,6 @@ export const createCatalogueRoute = createRoute({
       'Catalogue created successfully',
     ),
   },
-  middlewares: [
-    authenticate,
-    requireOrganization,
-    requirePermission('create:catalogue'),
-  ] as const,
 });
 
 const getCataloguesSchema = z.object({
@@ -88,7 +88,7 @@ export const getCataloguesRoute = createRoute({
       'List of catalogues retrieved successfully',
     ),
   },
-  middlewares: [authenticate, requireOrganization] as const,
+  middleware: [authenticate, requireOrganization] as const,
 });
 
 export const createCatalogueItemRoute = createRoute({
@@ -148,7 +148,7 @@ export const createCatalogueItemRoute = createRoute({
       'Catalogue not found',
     ),
   },
-  middlewares: [
+  middleware: [
     authenticate,
     requireOrganization,
     requirePermission('create:catalogue'),
@@ -193,7 +193,7 @@ export const getCatalogueItems = createRoute({
       'Catalogue items retrieved successfully',
     ),
   },
-  middlewares: [authenticate, requireOrganization] as const,
+  middleware: [authenticate, requireOrganization] as const,
 });
 
 export const allItemsRoute = createRoute({
@@ -229,7 +229,7 @@ export const allItemsRoute = createRoute({
       'All items retrieved successfully',
     ),
   },
-  middlewares: [authenticate, requireOrganization] as const,
+  middleware: [authenticate, requireOrganization] as const,
 });
 
 export const bulkUpdatePricesRoute = createRoute({
@@ -271,7 +271,7 @@ export const bulkUpdatePricesRoute = createRoute({
       'Invalid items',
     ),
   },
-  middlewares: [
+  middleware: [
     authenticate,
     requireOrganization,
     requirePermission('update:catalogue'),
@@ -314,7 +314,7 @@ export const bulkTransferItemsRoute = createRoute({
       'Invalid items',
     ),
   },
-  middlewares: [
+  middleware: [
     authenticate,
     requireOrganization,
     requirePermission('update:catalogue'),
@@ -358,7 +358,7 @@ export const bulkDeleteItemsRoute = createRoute({
       'Invalid items',
     ),
   },
-  middlewares: [
+  middleware: [
     authenticate,
     requireOrganization,
     requirePermission('delete:catalogue'),
@@ -394,7 +394,7 @@ export const updateCatalogueRoute = createRoute({
       'Catalogue updated successfully',
     ),
   },
-  middlewares: [
+  middleware: [
     authenticate,
     requireOrganization,
     requirePermission('update:catalogue'),
@@ -431,7 +431,7 @@ export const deleteCatalogueRoute = createRoute({
       'Catalogue is not empty',
     ),
   },
-  middlewares: [
+  middleware: [
     authenticate,
     requireOrganization,
     requirePermission('delete:catalogue'),
@@ -475,7 +475,7 @@ export const updateCatalogueItemRoute = createRoute({
       'Catalogue item not found',
     ),
   },
-  middlewares: [
+  middleware: [
     authenticate,
     requireOrganization,
     requirePermission('update:catalogue'),
@@ -513,7 +513,7 @@ export const deleteCatalogueItemRoute = createRoute({
       'Catalogue item not found',
     ),
   },
-  middlewares: [
+  middleware: [
     authenticate,
     requireOrganization,
     requirePermission('delete:catalogue'),
@@ -555,7 +555,7 @@ export const searchCataloguesRoute = createRoute({
       'Catalogues searched successfully',
     ),
   },
-  middlewares: [authenticate, requireOrganization] as const,
+  middleware: [authenticate, requireOrganization] as const,
 });
 
 export const searchAllCatalogueItemsRoute = createRoute({
@@ -592,7 +592,7 @@ export const searchAllCatalogueItemsRoute = createRoute({
       'Catalogues searched successfully',
     ),
   },
-  middlewares: [authenticate, requireOrganization] as const,
+  middleware: [authenticate, requireOrganization] as const,
 });
 
 export const searchCatalogueItemsRoute = createRoute({
@@ -632,7 +632,7 @@ export const searchCatalogueItemsRoute = createRoute({
       'Catalogues searched successfully',
     ),
   },
-  middlewares: [authenticate, requireOrganization] as const,
+  middleware: [authenticate, requireOrganization] as const,
 });
 
 export type CreateCatalogueRoute = typeof createCatalogueRoute;

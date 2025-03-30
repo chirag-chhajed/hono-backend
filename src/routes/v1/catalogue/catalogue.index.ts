@@ -7,6 +7,7 @@ const router = createRouter();
 router.openapi(routes.createCatalogueRoute, handlers.createCatalogue);
 router.openapi(routes.getCataloguesRoute, handlers.getCatalogues);
 router.openapi(routes.createCatalogueItemRoute, handlers.createCatalogueItem);
+router.openapi(routes.getCatalogueItems, handlers.getCatalogueItems);
 router.openapi(routes.allItemsRoute, handlers.allItems);
 router.openapi(routes.bulkUpdatePricesRoute, handlers.bulkUpdatePrices);
 router.openapi(routes.bulkTransferItemsRoute, handlers.bulkTransferItems);

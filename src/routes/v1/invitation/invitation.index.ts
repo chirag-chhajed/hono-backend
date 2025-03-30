@@ -6,5 +6,6 @@ const router = createRouter();
 
 router.openapi(routes.createInvitation, handlers.createInvitation);
 router.openapi(routes.getInvitations, handlers.getInvitations);
+router.openapi(routes.acceptInvitation, handlers.acceptInvitation);
 
 export default router;
