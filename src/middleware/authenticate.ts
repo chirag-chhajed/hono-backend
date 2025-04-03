@@ -10,19 +10,24 @@ import * as HttpStatusCodes from '@/lib/http-status-code.js';
 
 export async function authenticate(c: Context<AppBindings>, next: Next) {
   const authHeader = c.req.header('Authorization');
-
   if (!authHeader) {
-    c.json({
+    return c.json({
       success: false,
       message: 'Authorization header is required',
     }, HttpStatusCodes.UNAUTHORIZED);
-    return;
+  }
+
+  if (!authHeader.includes(' ')) {
+    return c.json({
+      success: false,
+      message: 'Invalid authorization header format',
+    }, HttpStatusCodes.UNAUTHORIZED);
   }
 
   const [bearer, token] = authHeader.split(' ');
 
   if (bearer !== 'Bearer' || !token) {
-    c.json({
+    return c.json({
       success: false,
       message: 'Invalid authorization header',
     }, HttpStatusCodes.UNAUTHORIZED);
@@ -30,21 +35,29 @@ export async function authenticate(c: Context<AppBindings>, next: Next) {
 
   try {
     await verify(token, env.JWT_ACCESS_SECRET_KEY);
-    const { payload } = decode(token);
-    c.set('jwtPayload', payload);
+    const decoded = decode(token);
+    
+    if (!decoded?.payload) {
+      return c.json({
+        success: false,
+        message: 'Invalid token format',
+      }, HttpStatusCodes.UNAUTHORIZED);
+    }
+
+    c.set('jwtPayload', decoded.payload);
     await next();
   }
   catch (error) {
     c.var.logger.error(error);
+    
     if (error instanceof JwtTokenExpired) {
-      c.json({
+      return c.json({
         success: false,
         message: 'Access token expired',
       }, HttpStatusCodes.FORBIDDEN);
-      return;
     }
 
-    c.json({
+    return c.json({
       success: false,
       message: 'Invalid token',
     }, HttpStatusCodes.UNAUTHORIZED);

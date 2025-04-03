@@ -2,6 +2,7 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { encode } from 'blurhash';
 import { format } from 'date-fns';
 import { nanoid } from 'nanoid';
+import {Buffer} from 'node:buffer'
 import sharp from 'sharp';
 
 import type { AppRouteHandler } from '@/lib/types.js';
@@ -102,10 +103,12 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
 export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = async (c) => {
   const { name, price, description } = c.req.valid('query');
   const { organizationId } = c.get('jwtPayload');
-  const existingCatalogue = c.req.valid('form');
-  const fileArray = Object.values(existingCatalogue);
+  const existingCatalogue = await c.req.parseBody();
+  // console.log(existingCatalogue,"existingCatalogue")
+  const fileArray = Object.values(existingCatalogue) as File[]
   const catalogueId = c.req.param('catalogueId');
-
+  // console.log(fileArray)
+  // console.log(existingCatalogue)
   const catalogue = await CatalogueEntity.query
     .primary({
       catalogueId,
@@ -132,22 +135,21 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
           file.type.split('/')[1]
         }`;
         const buffer = await file.arrayBuffer();
-        const uint8Array = new Uint8Array(buffer);
+        const uint8Array = Buffer.from(buffer)
 
         const { data, info } = await sharp(uint8Array)
           .resize(32, 32, {
             fit: 'inside',
-          })
-          .toBuffer({ resolveWithObject: true });
+          }).ensureAlpha().raw()
+          .toBuffer({ resolveWithObject: true })
 
         const blurhash = encode(
-          new Uint8ClampedArray(data),
+          new Uint8ClampedArray(data.buffer),
           info.width,
           info.height,
           4,
           4,
         );
-
         const command = new PutObjectCommand({
           Bucket: env.S3_BUCKET_NAME,
           Key: fileName,
@@ -175,29 +177,39 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
         throw new Error(`Failed to process image: ${file.name}`);
       }
     }),
-  ).catch(() => {
+  ).catch((error) => {
+     console.error('Detailed error:', error);
     throw new Error(`Failed to process images`);
   });
 
-  await catalogueItemService.transaction
-    .write(({ catalogueItem, catalogueImages }) => [
-      catalogueItem
-        .create({
-          itemId,
-          catalogueId,
-          name,
-          price,
-          description,
-          orgId: organizationId,
-          image: {
-            imageUrl: images[0].imageUrl,
-            blurhash: images[0].blurhash,
-          },
-        })
-        .commit(),
-      ...images.map(img => catalogueImages.create(img).commit()),
-    ])
-    .go();
+await catalogueItemService.transaction
+  .write(({ catalogueItem, catalogueImages }) => [
+    catalogueItem
+      .create({
+        itemId,
+        catalogueId,
+        name,
+        price,
+        description,
+        orgId: organizationId,
+        image: {
+          imageUrl: images[0].imageUrl,
+          blurhash: images[0].blurhash,
+          // uploadedAt is auto-added by default
+        },
+        // createdAt is auto-added by default
+      })
+      .commit(),
+    ...images.map(img => catalogueImages.create({
+      itemId, 
+      catalogueId, 
+      orgId: organizationId, 
+      imageUrl: img.imageUrl, 
+      blurhash: img.blurhash,
+
+    }).commit()),
+  ])
+  .go();
 
   return c.json(
     { message: 'File uploaded successfully' },
@@ -560,10 +572,9 @@ export const deleteCatalogueItem: AppRouteHandler<DeleteCatalogueItemRoute> = as
 export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (c) => {
   const { search } = c.req.valid('query');
   const { organizationId } = c.get('jwtPayload');
-
   const catalogues = await CatalogueEntity.query.byOrgId({
     orgId: organizationId,
-  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} || ${contains(description, search)}`).go();
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} OR ${contains(description, search)}`).go();
 
   const images = await Promise.all(
     catalogues.data.map(async catalogue =>
@@ -600,10 +611,9 @@ export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (c
 export const searchAllCatalogueItems: AppRouteHandler<SearchAllCatalogueItemsRoute> = async (c) => {
   const { search } = c.req.valid('query');
   const { organizationId } = c.get('jwtPayload');
-
   const items = await CatalogueItemEntity.query.byOrganization({
     orgId: organizationId,
-  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} || ${contains(description, search)}`).go({
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} OR ${contains(description, search)}`).go({
     order: 'desc',
   });
 
@@ -619,7 +629,7 @@ export const searchCatalogueItems: AppRouteHandler<SearchCatalogueItemsRoute> = 
 
   const items = await CatalogueItemEntity.query.primary({
     catalogueId,
-  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} || ${contains(description, search)}`).go({
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} OR ${contains(description, search)}`).go({
     order: 'desc',
   }).then(items => items.data.filter(item => item.orgId === organizationId));
 

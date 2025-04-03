@@ -12,7 +12,7 @@ export const getOrganisations = createRoute({
   tags: ['Organisation'],
   path: '/organisation',
   method: 'get',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   middleware: [authenticate] as const,
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
@@ -40,7 +40,7 @@ export const createOrganisation = createRoute({
   tags: ['Organisation'],
   path: '/organisation',
   method: 'post',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   middleware: [authenticate] as const,
   request: {
     body: {
@@ -82,7 +82,7 @@ export const removeUserFromOrganisation = createRoute({
   tags: ['Organisation'],
   path: '/organisation/remove-user/{userId}',
   method: 'delete',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   middleware: [
     authenticate,
     requireOrganization,

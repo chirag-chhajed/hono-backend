@@ -31,7 +31,7 @@ export const createCatalogueRoute = createRoute({
     requireOrganization,
     requirePermission('create:catalogue'),
   ] as const,
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
       z.object({
@@ -57,7 +57,7 @@ export const getCataloguesRoute = createRoute({
   method: 'get',
   tags: ['Catalogue'],
   path: '/catalogue',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     query: getCataloguesSchema,
   },
@@ -95,7 +95,7 @@ export const createCatalogueItemRoute = createRoute({
   method: 'post',
   tags: ['Catalogue'],
   path: '/catalogue/{catalogueId}',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -159,7 +159,7 @@ export const getCatalogueItems = createRoute({
   method: 'get',
   tags: ['Catalogue'],
   path: '/catalogue/{catalogueId}',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     query: getCataloguesSchema.extend({
       priceSort: z.enum(['asc', 'desc']).optional(),
@@ -200,7 +200,7 @@ export const allItemsRoute = createRoute({
   method: 'get',
   tags: ['Catalogue'],
   path: '/catalogue/all',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     query: getCataloguesSchema,
   },
@@ -236,7 +236,7 @@ export const bulkUpdatePricesRoute = createRoute({
   method: 'post',
   tags: ['Catalogue'],
   path: '/catalogue/bulk-update-prices',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -282,7 +282,7 @@ export const bulkTransferItemsRoute = createRoute({
   method: 'post',
   tags: ['Catalogue'],
   path: '/catalogue/bulk-transfer-items',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -325,7 +325,7 @@ export const bulkDeleteItemsRoute = createRoute({
   method: 'delete',
   tags: ['Catalogue'],
   path: '/catalogue/bulk-delete-items',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -369,7 +369,7 @@ export const updateCatalogueRoute = createRoute({
   method: 'put',
   tags: ['Catalogue'],
   path: '/catalogue/{catalogueId}',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -405,7 +405,7 @@ export const deleteCatalogueRoute = createRoute({
   method: 'delete',
   tags: ['Catalogue'],
   path: '/catalogue/{catalogueId}',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -442,7 +442,7 @@ export const updateCatalogueItemRoute = createRoute({
   method: 'put',
   tags: ['Catalogue'],
   path: '/catalogue/{catalogueId}/{itemId}',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -486,7 +486,7 @@ export const deleteCatalogueItemRoute = createRoute({
   method: 'delete',
   tags: ['Catalogue'],
   path: '/catalogue/{catalogueId}/{itemId}',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -524,7 +524,7 @@ export const searchCataloguesRoute = createRoute({
   method: 'get',
   tags: ['Catalogue'],
   path: '/catalogue/search',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     query: z.object({
       search: z.string().min(1),
@@ -562,7 +562,7 @@ export const searchAllCatalogueItemsRoute = createRoute({
   method: 'get',
   tags: ['Catalogue'],
   path: '/catalogue/search-items',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     query: z.object({
       search: z.string().min(1),
@@ -599,7 +599,7 @@ export const searchCatalogueItemsRoute = createRoute({
   method: 'get',
   tags: ['Catalogue'],
   path: '/catalogue/search-items/{catalogueId}',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     query: z.object({
       search: z.string().min(1),

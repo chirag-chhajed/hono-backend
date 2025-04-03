@@ -32,7 +32,7 @@ const CatalogueItemEntity = new Entity(
         watch: '*',
         set: () => Date.now(),
       },
-      deletedAt: { type: 'number' },
+      deletedAt: { type: 'number',required:false },
       image: {
         type: 'map',
         required: true,

@@ -12,7 +12,7 @@ export const createInvitation = createRoute({
   method: 'post',
   tags: ['Invitation'],
   path: '/invitation',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   middleware: [
     authenticate,
     requireOrganization,
@@ -51,7 +51,7 @@ export const getInvitations = createRoute({
   method: 'get',
   tags: ['Invitation'],
   path: '/invitation',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   middleware: [
     authenticate,
     requireOrganization,
@@ -79,7 +79,7 @@ export const acceptInvitation = createRoute({
   method: 'post',
   tags: ['Invitation'],
   path: '/invitation/accept',
-  security: [{ bearerAuth: [] }],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {

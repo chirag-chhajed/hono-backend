@@ -30,7 +30,5 @@ export default antfu({
       semi: true,
     },
   },
-  stylistic: {
-    semi: true,
-  },
+  stylistic: false,
 });
