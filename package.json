@@ -1,3 +1,4 @@
+
 {
   "name": "hono-backend",
   "type": "module",
@@ -6,7 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc && tsc-alias",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "lambda": "esbuild --bundle --outfile=./lambda/index.js --platform=node --target=node22 --format=esm ./src/lambda.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.767.0",
@@ -57,9 +59,9 @@
     ]
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged"
+    "pre-commit": "pnpm lint-staged --no-stash"
   },
   "lint-staged": {
-    "*.{ts,json,yaml,yml}": "eslint --fix"
+    "*": "eslint --fix"
   }
 }

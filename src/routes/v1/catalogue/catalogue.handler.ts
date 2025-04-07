@@ -571,10 +571,11 @@ export const deleteCatalogueItem: AppRouteHandler<DeleteCatalogueItemRoute> = as
 
 export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (c) => {
   const { search } = c.req.valid('query');
+
   const { organizationId } = c.get('jwtPayload');
   const catalogues = await CatalogueEntity.query.byOrgId({
     orgId: organizationId,
-  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} OR ${contains(description, search)}`).go();
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { begins }) => `${begins(name, search)} OR ${begins(description, search)}`).go();
 
   const images = await Promise.all(
     catalogues.data.map(async catalogue =>
@@ -613,7 +614,7 @@ export const searchAllCatalogueItems: AppRouteHandler<SearchAllCatalogueItemsRou
   const { organizationId } = c.get('jwtPayload');
   const items = await CatalogueItemEntity.query.byOrganization({
     orgId: organizationId,
-  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} OR ${contains(description, search)}`).go({
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { begins }) => `${begins(name, search)} OR ${begins(description, search)}`).go({
     order: 'desc',
   });
 
@@ -629,7 +630,7 @@ export const searchCatalogueItems: AppRouteHandler<SearchCatalogueItemsRoute> = 
 
   const items = await CatalogueItemEntity.query.primary({
     catalogueId,
-  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { contains }) => `${contains(name, search)} OR ${contains(description, search)}`).go({
+  }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { begins }) => `${begins(name, search)} OR ${begins(description, search)}`).go({
     order: 'desc',
   }).then(items => items.data.filter(item => item.orgId === organizationId));
 

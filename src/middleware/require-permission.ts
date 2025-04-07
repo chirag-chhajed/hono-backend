@@ -13,14 +13,13 @@ export function requirePermission(permission: Permission) {
     const hasAccess = hasPermission({ id, role: role as ROLE }, permission);
 
     if (!hasAccess) {
-      c.json(
+      return c.json(
         {
           success: false,
           message: 'You don\'t have permission to access this resource',
         },
         HttpStatusCodes.BAD_REQUEST,
       );
-      return;
     }
 
     await next();

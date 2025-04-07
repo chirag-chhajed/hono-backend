@@ -65,14 +65,13 @@ export async function authenticate(c: Context<AppBindings>, next: Next) {
 }
 
 export async function requireOrganization(c: Context<AppBindings>, next: Next) {
-  const { organizationId } = c.get('jwtPayload');
+  const payload = c.get('jwtPayload');
 
-  if (!organizationId) {
-    c.json({
+  if (!payload.organizationId) {
+    return c.json({
       success: false,
       message: 'Organization ID is required in the payload',
     }, HttpStatusCodes.BAD_REQUEST);
-    return;
   }
 
   await next();
