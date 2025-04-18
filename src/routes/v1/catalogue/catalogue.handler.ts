@@ -62,7 +62,6 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
       limit: 20,
       order,
     });
-
   const images = await Promise.all(
     catalogues.data.map(async catalogue =>
       CatalogueItemImageEntity.query
@@ -151,7 +150,7 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
           4,
         );
         const command = new PutObjectCommand({
-          Bucket: env.S3_BUCKET_NAME,
+          Bucket: env.MY_S3_BUCKET_NAME,
           Key: fileName,
           Body: uint8Array,
           ContentType: file.type,
@@ -163,7 +162,7 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
         return {
           orgId: organizationId,
           itemId,
-          imageUrl: `https://${env.S3_BUCKET_NAME}.s3.${env.AWS_REGION}.amazonaws.com/${fileName}`,
+          imageUrl: `https://${env.MY_S3_BUCKET_NAME}.s3.${env.MY_AWS_REGION}.amazonaws.com/${fileName}`,
           blurhash,
           catalogueId,
         };
@@ -190,7 +189,7 @@ await catalogueItemService.transaction
         catalogueId,
         name,
         price,
-        description,
+        description: description ?? undefined,
         orgId: organizationId,
         image: {
           imageUrl: images[0].imageUrl,
@@ -243,24 +242,24 @@ export const getCatalogueItems: AppRouteHandler<GetCatalogueItemsRoute> = async 
 };
 
 export const allItems: AppRouteHandler<AllItemsRoute> = async (c) => {
-  const { cursor, order = 'desc' } = c.req.valid('query');
+    const { cursor, order = 'desc' } = c.req.valid('query');
 
-  const { organizationId } = c.get('jwtPayload');
-
-  const { data, cursor: nextCursor } = await CatalogueItemEntity.query.byOrganization({
-    orgId: organizationId,
-  })
+    const { organizationId } = c.get('jwtPayload');
+ 
+    const { data, cursor: nextCursor } = await CatalogueItemEntity.query.byOrganization({
+      orgId: organizationId,
+    })
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
-    .go({
-      cursor,
-      limit: 20,
-      order,
-    });
+      .go({
+        cursor,
+        limit: 20,
+        order,
+      });
 
-  return c.json({
-    items: data,
-    nextCursor: nextCursor ?? null,
-  }, HttpStatusCodes.OK);
+    return c.json({
+      items: data,
+      nextCursor: nextCursor ?? null,
+    }, HttpStatusCodes.OK);
 };
 
 type catalogueDetails = {

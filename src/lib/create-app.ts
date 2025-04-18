@@ -50,9 +50,9 @@ export default function createApp() {
 const firebaseAdmin = initializeApp({
   credential: cert({
     clientEmail: env.FIREBASE_CLIENT_EMAIL,
-    privateKey: env.FIREBASE_PRIVATE_KEY,
+    privateKey: env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     projectId: env.FIREBASE_PROJECT_ID,
   }),
-});
+})
 
 export const auth = getAuth(firebaseAdmin);
