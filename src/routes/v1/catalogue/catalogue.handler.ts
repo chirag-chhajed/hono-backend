@@ -131,7 +131,7 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
   const images = await Promise.all(
     fileArray.map(async (file) => {
       try {
-        const fileName = `${organizationId}/${nanoid()}.${
+        const fileName = `${organizationId}/${catalogueId}/${nanoid()}.${
           file.type.split('/')[1]
         }`;
         const buffer = await file.arrayBuffer();
@@ -256,7 +256,6 @@ export const allItems: AppRouteHandler<AllItemsRoute> = async (c) => {
         limit: 20,
         order,
       });
-
     return c.json({
       items: data,
       nextCursor: nextCursor ?? null,
@@ -299,12 +298,12 @@ export const bulkUpdatePrices: AppRouteHandler<BulkUpdatePricesRoute> = async (c
       catalogueDetails = existingCatalogue.data[0];
     }
     else {
-      const newCatalogue = await CatalogueEntity.create({
-        orgId: organizationId,
-        name: `Bulk Price Update ${format(new Date(), 'dd/MM/yyyy')}`,
-        description: `This catalogue was created by bulk price update on ${format(new Date(), 'dd/MM/yyyy')}`,
-        createdBy: userId,
-      }).go();
+const newCatalogue = await CatalogueEntity.create({
+  orgId: organizationId,
+  name: `Price Update ${format(new Date(), 'MMM d, yyyy')}`,
+  description: `Catalogue snapshot created during price update on ${format(new Date(), 'MMM d, yyyy')}`,
+  createdBy: userId,
+}).go();
       catalogueDetails = newCatalogue.data;
     }
     const ids = Array.from({
@@ -382,12 +381,12 @@ export const bulkTransferItems: AppRouteHandler<BulkTransferItemsRoute> = async 
     catalogueDetails = existingCatalogue.data[0];
   }
   else {
-    const newCatalogue = await CatalogueEntity.create({
-      orgId: organizationId,
-      name: `Bulk Price Update ${format(new Date(), 'dd/MM/yyyy')}`,
-      description: `This catalogue was created by bulk price update on ${format(new Date(), 'dd/MM/yyyy')}`,
-      createdBy: userId,
-    }).go();
+const newCatalogue = await CatalogueEntity.create({
+  orgId: organizationId,
+  name: `Copy of Items - ${format(new Date(), 'MMM d')}`,
+  description: `Items copied from another catalogue on ${format(new Date(), 'MMMM d, yyyy')}`,
+  createdBy: userId,
+}).go();
     catalogueDetails = newCatalogue.data;
   }
   const newItems = existingItems.map((item, index) => {
