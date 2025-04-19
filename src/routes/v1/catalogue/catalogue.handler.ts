@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { nanoid } from 'nanoid';
 import {Buffer} from 'node:buffer'
 import sharp from 'sharp';
+import { ulid } from 'ulid';
 
 import type { AppRouteHandler } from '@/lib/types.js';
 import type {
@@ -125,7 +126,7 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
     );
   }
 
-  const itemId = nanoid(32);
+  const itemId = ulid();
 
   const images = await Promise.all(
     fileArray.map(async (file) => {
@@ -308,7 +309,7 @@ export const bulkUpdatePrices: AppRouteHandler<BulkUpdatePricesRoute> = async (c
     }
     const ids = Array.from({
       length: existingItems.length,
-    }, () => nanoid(32));
+    }, () => ulid());
     const existingImages = await CatalogueItemImageEntity.get(existingItems.map(item => ({ itemId: item.itemId }))).go();
 
     const newItems = existingItems.map((item, index) => {
@@ -368,7 +369,7 @@ export const bulkTransferItems: AppRouteHandler<BulkTransferItemsRoute> = async 
   }
   const ids = Array.from({
     length: existingItems.length,
-  }, () => nanoid(32));
+  }, () => ulid());
   const existingImages = await CatalogueItemImageEntity.get(existingItems.map(item => ({ itemId: item.itemId }))).go();
 
   if (newCatalogueId) {
@@ -451,14 +452,13 @@ export const bulkDeleteItems: AppRouteHandler<BulkDeleteItemsRoute> = async (c) 
 };
 
 export const updateCatalogue: AppRouteHandler<UpdateCatalogueRoute> = async (c) => {
-  const { name, description, createdAt } = c.req.valid('json');
+  const { name, description} = c.req.valid('json');
   const { catalogueId } = c.req.param();
   const { organizationId } = c.get('jwtPayload');
 
   await CatalogueEntity.patch({
     catalogueId,
     orgId: organizationId,
-    createdAt,
   }).set({
     name,
     description,
@@ -472,7 +472,6 @@ export const updateCatalogue: AppRouteHandler<UpdateCatalogueRoute> = async (c) 
 export const deleteCatalogue: AppRouteHandler<DeleteCatalogueRoute> = async (c) => {
   const { catalogueId } = c.req.param();
   const { organizationId } = c.get('jwtPayload');
-  const { createdAt } = c.req.valid('json');
 
   const items = await CatalogueItemEntity.query.primary({
     catalogueId,
@@ -488,7 +487,6 @@ export const deleteCatalogue: AppRouteHandler<DeleteCatalogueRoute> = async (c) 
   await CatalogueEntity.patch({
     catalogueId,
     orgId: organizationId,
-    createdAt,
   }).set({
     deletedAt: Date.now(),
   }).go();
@@ -497,7 +495,7 @@ export const deleteCatalogue: AppRouteHandler<DeleteCatalogueRoute> = async (c) 
 };
 
 export const updateCatalogueItem: AppRouteHandler<UpdateCatalogueItemRoute> = async (c) => {
-  const { name, description, price, createdAt } = c.req.valid('json');
+  const { name, description, price } = c.req.valid('json');
   const { catalogueId, itemId } = c.req.param();
   const { organizationId } = c.get('jwtPayload');
 
@@ -517,8 +515,7 @@ export const updateCatalogueItem: AppRouteHandler<UpdateCatalogueItemRoute> = as
   await catalogueItemService.transaction.write(({ catalogueItem }) => [
     catalogueItem.patch({
       itemId,
-      catalogueId,
-      createdAt,
+      catalogueId
     }).set({
       name,
       description,
@@ -534,7 +531,6 @@ export const updateCatalogueItem: AppRouteHandler<UpdateCatalogueItemRoute> = as
 export const deleteCatalogueItem: AppRouteHandler<DeleteCatalogueItemRoute> = async (c) => {
   const { itemId, catalogueId } = c.req.param();
   const { organizationId } = c.get('jwtPayload');
-  const { createdAt } = c.req.valid('json');
   const catalogue = await CatalogueEntity.query.primary({
     catalogueId,
     orgId: organizationId,
@@ -553,8 +549,7 @@ export const deleteCatalogueItem: AppRouteHandler<DeleteCatalogueItemRoute> = as
   await catalogueItemService.transaction.write(({ catalogueItem, catalogueImages }) => [
     catalogueItem.patch({
       itemId,
-      catalogueId,
-      createdAt,
+      catalogueId
     }).set({
       deletedAt: now,
     }).commit(),

@@ -1,5 +1,5 @@
 import { Entity } from 'electrodb';
-import { nanoid } from 'nanoid';
+import { ulid } from 'ulid';
 
 import { dynamoClient, TABLE_NAME } from '@/db/client.js';
 
@@ -14,7 +14,7 @@ const InvitationEntity = new Entity(
       invitationId: {
         type: 'string',
         required: true,
-        default: () => nanoid(32),
+        default: () => ulid(),
       },
       orgId: { type: 'string', required: true },
       code: { type: 'string', required: true },
@@ -36,12 +36,10 @@ const InvitationEntity = new Entity(
         pk: {
           field: 'pk',
           composite: ['orgId'],
-          // template: "ORG#${orgId}"
         },
         sk: {
           field: 'sk',
           composite: ['invitationId'],
-          // template: "INVITATION#${invitationId}",
         },
       },
       byCode: {
@@ -49,12 +47,10 @@ const InvitationEntity = new Entity(
         pk: {
           field: 'gsi1pk',
           composite: ['code'],
-          // template: "CODE#${code}"
         },
         sk: {
           field: 'gsi1sk',
           composite: ['invitationId'],
-          // template: "INVITATION#${invitationId}",
         },
       },
     },

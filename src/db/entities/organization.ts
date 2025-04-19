@@ -1,5 +1,5 @@
 import { Entity } from 'electrodb';
-import { nanoid } from 'nanoid';
+import { ulid } from 'ulid';
 
 import { dynamoClient, TABLE_NAME } from '@/db/client.js';
 
@@ -11,7 +11,7 @@ const OrganizationEntity = new Entity(
       service: 'app',
     },
     attributes: {
-      orgId: { type: 'string', required: true, default: () => nanoid(32) },
+      orgId: { type: 'string', required: true, default: () => ulid() },
       createdBy: { type: 'string', required: true }, // userId
       name: { type: 'string', required: true },
       description: { type: 'string', required: false },
@@ -35,12 +35,10 @@ const OrganizationEntity = new Entity(
         pk: {
           field: 'pk',
           composite: ['orgId'],
-          // template: "ORG#${orgId}"
         },
         sk: {
           field: 'sk',
           composite: ['orgId'],
-          // template: "ORG#${orgId}"
         },
       },
     },

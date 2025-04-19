@@ -1,5 +1,5 @@
 import { Entity } from 'electrodb';
-import { nanoid } from 'nanoid';
+import { ulid } from 'ulid';
 
 import { dynamoClient, TABLE_NAME } from '@/db/client.js';
 
@@ -12,7 +12,7 @@ export const UserEntity = new Entity(
       service: 'app',
     },
     attributes: {
-      userId: { type: 'string', required: true, default: () => nanoid(32) },
+      userId: { type: 'string', required: true, default: () => ulid() },
       email: { type: 'string', required: true },
       name: { type: 'string', required: true },
       createdAt: {
@@ -35,12 +35,10 @@ export const UserEntity = new Entity(
         pk: {
           field: 'pk',
           composite: ['userId'],
-          // template: "USER#${userId}"
         },
         sk: {
           field: 'sk',
           composite: ['userId'],
-          // template: "USER#${userId}"
         },
       },
       byEmail: {
@@ -48,12 +46,10 @@ export const UserEntity = new Entity(
         pk: {
           field: 'gsi1pk',
           composite: ['email'],
-          // template: "EMAIL#${email}",
         },
         sk: {
           field: 'gsi1sk',
           composite: ['userId'],
-          // template: "USER#${userId}",
         },
       },
     },

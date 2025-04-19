@@ -1,5 +1,5 @@
 import { Entity } from 'electrodb';
-import { nanoid } from 'nanoid';
+import { ulid } from 'ulid';
 
 import { dynamoClient, TABLE_NAME } from '@/db/client.js';
 
@@ -11,7 +11,7 @@ const CatalogueItemEntity = new Entity(
       service: 'app',
     },
     attributes: {
-      itemId: { type: 'string', required: true, default: () => nanoid(32) },
+      itemId: { type: 'string', required: true, default: () => ulid() },
       catalogueId: { type: 'string', required: true },
       orgId: { type: 'string', required: true },
       name: { type: 'string', required: true },
@@ -51,7 +51,7 @@ const CatalogueItemEntity = new Entity(
         },
         sk: {
           field: 'sk',
-          composite: ['createdAt', 'itemId'],
+          composite: ['itemId'],
         },
       },
       byPrice: {
@@ -59,13 +59,13 @@ const CatalogueItemEntity = new Entity(
         pk: { field: 'gsi1pk', composite: ['catalogueId'] },
         sk: {
           field: 'gsi1sk',
-          composite: ['price', 'createdAt'],
+          composite: ['price'],
         },
       },
       byOrganization: {
         index: 'gsi2',
         pk: { field: 'gsi2pk', composite: ['orgId'] },
-        sk: { field: 'gsi2sk', composite: ['createdAt', 'itemId'] },
+        sk: { field: 'gsi2sk', composite: ['itemId'] },
       },
     },
   },

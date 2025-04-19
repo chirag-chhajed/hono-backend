@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid';
+import { ulid } from 'ulid';
 
 import type { AppRouteHandler } from '@/lib/types.js';
 import type {
@@ -17,7 +17,7 @@ export const createOrganisation: AppRouteHandler<
   try {
     const { name, description } = c.req.valid('json');
     const { id } = c.get('jwtPayload');
-    const orgId = nanoid(32);
+    const orgId = ulid();
     await organizationService.transaction
       .write(({ organisation, userOrganization }) => [
         organisation

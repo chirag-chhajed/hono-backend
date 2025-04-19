@@ -28,8 +28,7 @@ const UserOrganizationEntity = new Entity(
       primary: {
         pk: {
           field: 'pk',
-          composite: ['orgId'],
-          // template: "ORG#${orgId}"
+          composite: ['orgId'],        
         },
         sk: {
           field: 'sk',

@@ -245,7 +245,6 @@ export const bulkUpdatePricesRoute = createRoute({
             items: z.array(z.object({
               catalogueId: z.string(),
               itemId: z.string(),
-              createdAt: z.number(),
             })).min(1),
             operation: z.enum(['clone', 'update']),
             value: z.coerce.number({ message: 'Enter a valid number' }).positive('Value must be greater than 0').multipleOf(0.01, 'Value can only have up to 2 decimal places'),
@@ -291,7 +290,6 @@ export const bulkTransferItemsRoute = createRoute({
             items: z.array(z.object({
               catalogueId: z.string(),
               itemId: z.string(),
-              createdAt: z.number(),
             })).min(1),
             newCatalogueId: z.string().optional(),
             operation: z.enum(['clone', 'transfer']),
@@ -334,7 +332,6 @@ export const bulkDeleteItemsRoute = createRoute({
             items: z.array(z.object({
               catalogueId: z.string(),
               itemId: z.string(),
-              createdAt: z.number(),
             })).min(1),
           }),
         },
@@ -375,9 +372,8 @@ export const updateCatalogueRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            name: z.string().min(1).max(100),
-            description: z.string().min(1).max(500).optional(),
-            createdAt: z.number(),
+            name: z.string().trim().min(1).max(100),
+            description: z.string().trim().max(500).optional(),
           }),
         },
       },
@@ -407,15 +403,6 @@ export const deleteCatalogueRoute = createRoute({
   path: '/catalogue/{catalogueId}',
   security: [{ Bearer: [] }],
   request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: z.object({
-            createdAt: z.number(),
-          }),
-        },
-      },
-    },
     params: z.object({
       catalogueId: z.string(),
     }),
@@ -448,10 +435,9 @@ export const updateCatalogueItemRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            name: z.string().min(1).max(100),
-            description: z.string().min(1).max(500).optional(),
-            price: z.coerce.number({ message: 'Enter a valid number' }).positive('Price must be greater than 0').multipleOf(0.01, 'Price can only have up to 2 decimal places'),
-            createdAt: z.number(),
+            name: z.string().trim().max(100),
+            description: z.string().trim().max(500).optional(),
+            price: z.coerce.number({ message: 'Enter a valid number' }).positive('Price must be greater than 0').multipleOf(0.01, 'Price can only have up to 2 decimal places').min(0.01, 'Minimum price is 0.01'),
           }),
         },
       },
@@ -488,15 +474,6 @@ export const deleteCatalogueItemRoute = createRoute({
   path: '/catalogue/{catalogueId}/{itemId}',
   security: [{ Bearer: [] }],
   request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: z.object({
-            createdAt: z.number(),
-          }),
-        },
-      },
-    },
     params: z.object({
       catalogueId: z.string(),
       itemId: z.string(),
