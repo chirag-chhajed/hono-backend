@@ -81,6 +81,7 @@ export const getCataloguesRoute = createRoute({
               catalogueId: z.string(),
               itemId: z.string(),
             })),
+            
           }),
         ),
         nextCursor: z.string().nullable(),
@@ -187,6 +188,7 @@ export const getCatalogueItems = createRoute({
             blurhash: z.string().optional(),
             uploadedAt: z.number().optional(),
           }),
+          
         })),
         nextCursor: z.string().nullable(),
       }),
@@ -202,7 +204,9 @@ export const allItemsRoute = createRoute({
   path: '/catalogue/all',
   security: [{ Bearer: [] }],
   request: {
-    query: getCataloguesSchema,
+    query: getCataloguesSchema.extend({
+      priceSort: z.enum(['asc', 'desc']).optional(),
+    }),
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
@@ -425,6 +429,21 @@ export const deleteCatalogueRoute = createRoute({
   ] as const,
 });
 
+export const getCatalogueItemRoute = createRoute({
+  method: 'get',
+  tags: ['Catalogue'],
+  path: '/catalogue/{catalogueId}/{itemId}',
+  security: [{ Bearer: [] }],
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({
+        message: z.string(),
+      }),
+      'Catalogue item retrieved successfully',
+    ),
+  },
+  middleware: [authenticate, requireOrganization] as const,
+});
 export const updateCatalogueItemRoute = createRoute({
   method: 'put',
   tags: ['Catalogue'],
@@ -526,6 +545,7 @@ export const searchCataloguesRoute = createRoute({
             catalogueId: z.string(),
             itemId: z.string(),
           })),
+          
         })),
 
       }),
@@ -564,6 +584,7 @@ export const searchAllCatalogueItemsRoute = createRoute({
             blurhash: z.string().optional(),
             uploadedAt: z.number().optional(),
           }),
+          
         })),
       }),
       'Catalogues searched successfully',
@@ -604,6 +625,7 @@ export const searchCatalogueItemsRoute = createRoute({
             blurhash: z.string().optional(),
             uploadedAt: z.number().optional(),
           }),
+          
         })),
       }),
       'Catalogues searched successfully',

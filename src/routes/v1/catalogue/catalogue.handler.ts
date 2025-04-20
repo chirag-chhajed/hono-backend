@@ -243,19 +243,22 @@ export const getCatalogueItems: AppRouteHandler<GetCatalogueItemsRoute> = async 
 };
 
 export const allItems: AppRouteHandler<AllItemsRoute> = async (c) => {
-    const { cursor, order = 'desc' } = c.req.valid('query');
+    const { cursor, order = 'desc', priceSort } = c.req.valid('query');
 
     const { organizationId } = c.get('jwtPayload');
+
+    const query = priceSort
+    ? CatalogueItemEntity.query.byOrganizationAndPrice({ orgId: organizationId })
+    : CatalogueItemEntity.query.byOrganization({ orgId: organizationId });
  
-    const { data, cursor: nextCursor } = await CatalogueItemEntity.query.byOrganization({
-      orgId: organizationId,
-    })
+    const { data, cursor: nextCursor } = await query
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
       .go({
         cursor,
         limit: 20,
         order,
       });
+      
     return c.json({
       items: data,
       nextCursor: nextCursor ?? null,

@@ -44,6 +44,7 @@ declare global {
      
     // eslint-disable-next-line ts/ban-ts-comment
     // @ts-ignore
+    // eslint-disable-next-line ts/consistent-type-definitions
     interface ProcessEnv extends z.infer<typeof envVariables> {}
   }
 }

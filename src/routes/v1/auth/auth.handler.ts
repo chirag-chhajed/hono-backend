@@ -172,7 +172,6 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
       );
     }
     catch (error) {
-      console.log(error)
       if (error instanceof JwtTokenExpired) {
         return c.json(
           {

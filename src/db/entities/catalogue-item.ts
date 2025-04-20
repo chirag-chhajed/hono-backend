@@ -22,6 +22,16 @@ const CatalogueItemEntity = new Entity(
       name: { type: 'string', required: true },
       description: { type: 'string' },
       price: { type: 'number', required: true },
+      priceSortKey: {
+  type: "string",
+  required: true,
+  hidden: true,
+  watch: ["price"],
+  set: (_, { price }:{price:number}) => {
+    return formatPriceForSort(price);
+  },
+  default: () => formatPriceForSort(0),
+},
       metadata: { type: 'any' }, // JSON object
       createdAt: {
         type: 'number',
@@ -64,13 +74,18 @@ const CatalogueItemEntity = new Entity(
         pk: { field: 'gsi1pk', composite: ['catalogueId'] },
         sk: {
           field: 'gsi1sk',
-          composite: ['price'],
+          composite: ['priceSortKey'],
         },
       },
       byOrganization: {
         index: 'gsi2',
         pk: { field: 'gsi2pk', composite: ['orgId'] },
         sk: { field: 'gsi2sk', composite: ['itemId'] },
+      },
+      byOrganizationAndPrice: {
+        index: 'gsi3',
+        pk: { field: 'gsi3pk', composite: ['orgId'] },
+        sk: { field: 'gsi3sk', composite: ['priceSortKey'] },
       },
     },
   },
