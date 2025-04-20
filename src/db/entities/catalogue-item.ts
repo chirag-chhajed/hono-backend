@@ -1,7 +1,12 @@
+import {Decimal} from 'decimal.js';
 import { Entity } from 'electrodb';
 import { ulid } from 'ulid';
 
 import { dynamoClient, TABLE_NAME } from '@/db/client.js';
+
+function formatPriceForSort(price: number): string {
+  return new Decimal(price).mul(100).toFixed(0).padStart(12, '0');
+}
 
 const CatalogueItemEntity = new Entity(
   {

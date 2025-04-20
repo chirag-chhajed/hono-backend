@@ -115,7 +115,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
 
 export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
   try {
-    const { organizationId } = c.req.valid('query');
+    const query = c.req.valid('query');
     const refreshToken = getCookie(c, 'refreshToken');
 
     if (!refreshToken) {
@@ -127,9 +127,9 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
       const { payload } = decode(refreshToken);
       let orgDetails;
 
-      if (organizationId) {
+      if (query.organizationId) {
         orgDetails = await UserOrganizationEntity.get({
-          orgId: organizationId,
+          orgId: query.organizationId,
           userId: payload.id as string,
         }).go();
         if (!orgDetails.data) {
@@ -147,8 +147,8 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
         id: payload.id,
         email: payload.email,
         name: payload.name,
-        ...(organizationId && {
-          organizationId,
+        ...(query.organizationId && {
+          organizationId: query.organizationId,
           role: orgDetails?.data?.role,
         }),
       } as BaseTokenPayload | OrgTokenPayload;
@@ -172,6 +172,7 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
       );
     }
     catch (error) {
+      console.log(error)
       if (error instanceof JwtTokenExpired) {
         return c.json(
           {

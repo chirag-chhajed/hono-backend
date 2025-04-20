@@ -30,5 +30,6 @@ export function calculateAdjustedPrice({
       : currentPrice.minus(adjustment);
   }
 
-  return newPrice.toDecimalPlaces(2).toNumber();
+  // Ensure price doesn't go negative
+  return newPrice.lessThan(0) ? 0 : newPrice.toDecimalPlaces(2).toNumber();
 }
