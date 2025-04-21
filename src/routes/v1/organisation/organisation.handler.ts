@@ -4,10 +4,12 @@ import type { AppRouteHandler } from '@/lib/types.js';
 import type {
   CreateOrganisationRoute,
   GetOrganisationsRoute,
+  GetUsersInOrganisationRoute,
   RemoveUserFromOrganisationRoute,
 } from '@/routes/v1/organisation/organisation.routes.js';
 
 import { UserOrganizationEntity } from '@/db/entities/user-organization.js';
+import { UserEntity } from '@/db/entities/user.js';
 import { organizationService } from '@/db/organization-service.js';
 import * as HttpStatusCodes from '@/lib/http-status-code.js';
 
@@ -87,6 +89,18 @@ export const getOrganisations: AppRouteHandler<GetOrganisationsRoute> = async (
     );
   }
 };
+
+export const getUsersInOrganisation: AppRouteHandler<GetUsersInOrganisationRoute> = async (c) => {
+  const {organizationId} = c.get('jwtPayload');
+
+  const usersMetadata = await UserOrganizationEntity.query.primary({
+    orgId: organizationId,
+  }).go();
+
+  const users = await UserEntity.get(usersMetadata.data.map(user => ({userId:user.userId}))).go();
+
+  return c.json(users.data,HttpStatusCodes.OK)
+}
 
 export const removeUserFromOrganisation: AppRouteHandler<
   RemoveUserFromOrganisationRoute

@@ -17,6 +17,7 @@ router.openapi(routes.createCatalogueItemRoute, handlers.createCatalogueItem);
 router.openapi(routes.getCatalogueItems, handlers.getCatalogueItems);
 router.openapi(routes.updateCatalogueRoute, handlers.updateCatalogue);
 router.openapi(routes.deleteCatalogueRoute, handlers.deleteCatalogue);
+router.openapi(routes.getCatalogueItemRoute,handlers.getCatalogueItem)
 router.openapi(routes.updateCatalogueItemRoute, handlers.updateCatalogueItem);
 router.openapi(routes.deleteCatalogueItemRoute, handlers.deleteCatalogueItem);
 

@@ -1,4 +1,4 @@
-import {Decimal} from 'decimal.js';
+import { Decimal } from 'decimal.js';
 import { Entity } from 'electrodb';
 import { ulid } from 'ulid';
 
@@ -23,16 +23,16 @@ const CatalogueItemEntity = new Entity(
       description: { type: 'string' },
       price: { type: 'number', required: true },
       priceSortKey: {
-  type: "string",
-  required: true,
-  hidden: true,
-  watch: ["price"],
-  set: (_, { price }:{price:number}) => {
-    return formatPriceForSort(price);
-  },
-  default: () => formatPriceForSort(0),
-},
-      metadata: { type: 'any' }, // JSON object
+        type: "string",
+        required: true,
+        hidden: true,
+        watch: ["price"],
+        set: (_, { price }: { price: number }) => {
+          return formatPriceForSort(price);
+        },
+        default: () => formatPriceForSort(0),
+      },
+      metadata: { type: 'any' },
       createdAt: {
         type: 'number',
         required: true,
@@ -47,7 +47,7 @@ const CatalogueItemEntity = new Entity(
         watch: '*',
         set: () => Date.now(),
       },
-      deletedAt: { type: 'number',required:false },
+      deletedAt: { type: 'number', required: false },
       image: {
         type: 'map',
         required: true,

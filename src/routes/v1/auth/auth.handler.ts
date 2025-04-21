@@ -27,7 +27,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
 
     let decodedToken: DecodedIdToken;
     try {
-      decodedToken = await auth.verifyIdToken(idToken);
+      decodedToken = await auth.verifyIdToken(idToken);    
     }
     catch {
       return c.json(

@@ -78,6 +78,25 @@ export const createOrganisation = createRoute({
   },
 });
 
+export const getUsersInOrganisation = createRoute({
+  tags: ['Organisation'],
+  path: '/organisation/users',
+  method: 'get',
+  security: [{ Bearer: [] }],
+  middleware: [authenticate,requireOrganization,requirePermission('remove:user')] as const,
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.array(z.object({
+        name: z.string(),
+        userId: z.string(),
+        email: z.string(),
+        createdAt: z.number(),
+        updatedAt: z.number(),
+      })),"Users"
+    )
+  }
+});
+
 export const removeUserFromOrganisation = createRoute({
   tags: ['Organisation'],
   path: '/organisation/remove-user/{userId}',
@@ -108,4 +127,5 @@ export const removeUserFromOrganisation = createRoute({
 
 export type GetOrganisationsRoute = typeof getOrganisations;
 export type CreateOrganisationRoute = typeof createOrganisation;
+export type GetUsersInOrganisationRoute = typeof getUsersInOrganisation;
 export type RemoveUserFromOrganisationRoute = typeof removeUserFromOrganisation;

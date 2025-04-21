@@ -6,6 +6,7 @@ const router = createRouter();
 
 router.openapi(routes.getOrganisations, handlers.getOrganisations);
 router.openapi(routes.createOrganisation, handlers.createOrganisation);
+router.openapi(routes.getUsersInOrganisation, handlers.getUsersInOrganisation);
 router.openapi(
   routes.removeUserFromOrganisation,
   handlers.removeUserFromOrganisation,

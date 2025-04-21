@@ -16,6 +16,7 @@ import type {
   CreateCatalogueRoute,
   DeleteCatalogueItemRoute,
   DeleteCatalogueRoute,
+  GetCatalogueItemRoute,
   GetCatalogueItemsRoute,
   GetCataloguesRoute,
   SearchAllCatalogueItemsRoute,
@@ -256,7 +257,7 @@ export const allItems: AppRouteHandler<AllItemsRoute> = async (c) => {
       .go({
         cursor,
         limit: 20,
-        order,
+        order: priceSort ?? order,
       });
       
     return c.json({
@@ -303,8 +304,8 @@ export const bulkUpdatePrices: AppRouteHandler<BulkUpdatePricesRoute> = async (c
     else {
 const newCatalogue = await CatalogueEntity.create({
   orgId: organizationId,
-  name: `Price Update ${format(new Date(), 'MMM d, yyyy')}`,
-  description: `Catalogue snapshot created during price update on ${format(new Date(), 'MMM d, yyyy')}`,
+  name: `${mode === 'percentage' ? `${value}%` : `₹${value}`} ${direction} Price ${format(new Date(), 'MMM d, yyyy')}`,
+  description: `Catalogue snapshot with ${direction === 'increase' ? 'increased' : 'decreased'} prices by ${mode === 'percentage' ? `${value}%` : `₹${value}`} on ${format(new Date(), 'MMM d, yyyy')}`,
   createdBy: userId,
 }).go();
       catalogueDetails = newCatalogue.data;
@@ -495,6 +496,23 @@ export const deleteCatalogue: AppRouteHandler<DeleteCatalogueRoute> = async (c) 
 
   return c.newResponse(null, HttpStatusCodes.NO_CONTENT);
 };
+
+export const getCatalogueItem: AppRouteHandler<GetCatalogueItemRoute> = async (c) => {
+  const {catalogueId,itemId} = c.req.param()
+
+  const catalogueItem = await CatalogueItemEntity.get({
+    catalogueId,
+    itemId
+  }).go()
+
+  if(!catalogueItem.data){
+    return c.json({
+      message: 'Catalogue item not found',
+    },HttpStatusCodes.NOT_FOUND)
+  }
+
+ return c.json(catalogueItem.data,HttpStatusCodes.OK)
+}
 
 export const updateCatalogueItem: AppRouteHandler<UpdateCatalogueItemRoute> = async (c) => {
   const { name, description, price } = c.req.valid('json');

@@ -434,13 +434,39 @@ export const getCatalogueItemRoute = createRoute({
   tags: ['Catalogue'],
   path: '/catalogue/{catalogueId}/{itemId}',
   security: [{ Bearer: [] }],
+  request: {
+    params: z.object({
+      catalogueId: z.string().ulid(),
+      itemId: z.string().ulid(),
+    }),
+  },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        message: z.string(),
-      }),
+          itemId: z.string(),
+          catalogueId: z.string(),
+          orgId: z.string(),
+          name: z.string(),
+          description: z.string().optional(),
+          price: z.number(),
+          metadata: z.any().optional(),
+          createdAt: z.number(),
+          updatedAt: z.number(),
+          deletedAt: z.number().optional(),
+          image: z.object({
+            imageUrl: z.string(),
+            blurhash: z.string().optional(),
+            uploadedAt: z.number().optional(),
+          }),
+        }),
       'Catalogue item retrieved successfully',
     ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.object({
+        message: z.string(),
+      }),
+      'Catalogue item not found',
+    )
   },
   middleware: [authenticate, requireOrganization] as const,
 });
@@ -642,6 +668,7 @@ export type AllItemsRoute = typeof allItemsRoute;
 export type BulkUpdatePricesRoute = typeof bulkUpdatePricesRoute;
 export type BulkTransferItemsRoute = typeof bulkTransferItemsRoute;
 export type BulkDeleteItemsRoute = typeof bulkDeleteItemsRoute;
+export type GetCatalogueItemRoute = typeof getCatalogueItemRoute;
 export type UpdateCatalogueRoute = typeof updateCatalogueRoute;
 export type DeleteCatalogueRoute = typeof deleteCatalogueRoute;
 export type UpdateCatalogueItemRoute = typeof updateCatalogueItemRoute;
