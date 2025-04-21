@@ -25,11 +25,11 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
   try {
     const { name, email, idToken } = c.req.valid('json');
 
+    // Step 1: Verify Firebase ID token
     let decodedToken: DecodedIdToken;
     try {
-      decodedToken = await auth.verifyIdToken(idToken);    
-    }
-    catch {
+      decodedToken = await auth.verifyIdToken(idToken);
+    } catch {
       return c.json(
         {
           success: false,
@@ -40,6 +40,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       );
     }
 
+    // Step 2: Check email matches token
     if (decodedToken.email !== email) {
       return c.json(
         {
@@ -51,6 +52,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       );
     }
 
+    // Step 3: Check if user already exists in DB
     const existingUserResult = await UserEntity.query.byEmail({ email }).go();
 
     let finalUser: {
@@ -62,6 +64,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
     };
 
     if (!existingUserResult.data.length) {
+      // New user, create in DB
       const newUserResult = await UserEntity.create({
         name,
         email,
@@ -71,17 +74,18 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
         throw new Error('Failed to create user');
       }
       finalUser = newUserResult.data;
-    }
-    else {
+    } else {
       finalUser = existingUserResult.data[0];
     }
 
+    // Step 4: Generate access and refresh tokens
     const { accessToken, refreshToken } = await generateTokens({
       id: finalUser.userId,
       email: finalUser.email,
       name: finalUser.name,
     });
 
+    // Step 5: Set refresh token in cookie
     setCookie(c, 'refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
@@ -89,6 +93,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       maxAge: 7 * 24 * 60 * 60,
     });
 
+    // Step 6: Return response
     return c.json(
       {
         accessToken,
@@ -100,8 +105,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       },
       HttpStatusCodes.OK,
     );
-  }
-  catch (error) {
+  } catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
@@ -112,6 +116,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
     );
   }
 };
+
 
 export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
   try {

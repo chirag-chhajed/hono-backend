@@ -111,6 +111,7 @@ export const acceptInvitation = createRoute({
       'Invitation not found',
     ),
   },
+  middleware: [authenticate]
 });
 
 export type CreateInvitationRoute = typeof createInvitation;

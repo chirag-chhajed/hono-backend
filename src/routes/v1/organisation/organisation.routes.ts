@@ -113,9 +113,13 @@ export const removeUserFromOrganisation = createRoute({
     }),
   },
   responses: {
-    [HttpStatusCodes.NO_CONTENT]: {
-      description: 'User removed from organisation successfully',
-    },
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({
+        success: z.boolean(),
+        message: z.string(),
+      }),
+      'User removed from organisation successfully',
+    ),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
       z.object({
         message: z.string(),

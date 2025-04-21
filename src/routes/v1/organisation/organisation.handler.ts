@@ -114,7 +114,10 @@ export const removeUserFromOrganisation: AppRouteHandler<
       orgId: organizationId,
     }).go();
 
-    return c.newResponse(null, HttpStatusCodes.NO_CONTENT);
+    return c.json({
+      success: true,
+      message: 'User removed from organisation',
+    }, HttpStatusCodes.OK);
   }
   catch (error) {
     c.var.logger.error(error);
