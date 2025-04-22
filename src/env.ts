@@ -1,11 +1,11 @@
 /* eslint-disable node/prefer-global/process */
 
 import { createEnv } from '@t3-oss/env-core';
-import { config } from 'dotenv';
-import { expand } from 'dotenv-expand';
+// import { config } from 'dotenv';
+// import { expand } from 'dotenv-expand';
 import { z } from 'zod';
 
-expand(config());
+// expand(config());
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(['development', 'production']).default('development'),

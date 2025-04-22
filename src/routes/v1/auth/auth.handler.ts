@@ -15,11 +15,11 @@ import type {
 import { UserOrganizationEntity } from '@/db/entities/user-organization.js';
 import { UserEntity } from '@/db/entities/user.js';
 import { env } from '@/env.js';
-import { auth } from '@/lib/create-app.js';
 import {
   generateTokens,
 } from '@/lib/generate-tokens.js';
 import * as HttpStatusCodes from '@/lib/http-status-code.js';
+import { verifyIdToken } from '@/lib/verify-token.js';
 
 export const login: AppRouteHandler<LoginRoute> = async (c) => {
   try {
@@ -28,7 +28,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
     // Step 1: Verify Firebase ID token
     let decodedToken: DecodedIdToken;
     try {
-      decodedToken = await auth.verifyIdToken(idToken);
+      decodedToken = await verifyIdToken(idToken);
     } catch {
       return c.json(
         {

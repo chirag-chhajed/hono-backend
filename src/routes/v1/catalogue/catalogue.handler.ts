@@ -1,9 +1,7 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { encode } from 'blurhash';
 import { format } from 'date-fns';
 import { nanoid } from 'nanoid';
 import {Buffer} from 'node:buffer'
-import sharp from 'sharp';
 import { ulid } from 'ulid';
 
 import type { AppRouteHandler } from '@/lib/types.js';
@@ -105,7 +103,6 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
   const { name, price, description } = c.req.valid('query');
   const { organizationId } = c.get('jwtPayload');
   const existingCatalogue = await c.req.parseBody();
-  // console.log(existingCatalogue,"existingCatalogue")
   const fileArray = Object.values(existingCatalogue) as File[]
   const catalogueId = c.req.param('catalogueId');
   // console.log(fileArray)
@@ -138,19 +135,6 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
         const buffer = await file.arrayBuffer();
         const uint8Array = Buffer.from(buffer)
 
-        const { data, info } = await sharp(uint8Array)
-          .resize(32, 32, {
-            fit: 'inside',
-          }).ensureAlpha().raw()
-          .toBuffer({ resolveWithObject: true })
-
-        const blurhash = encode(
-          new Uint8ClampedArray(data.buffer),
-          info.width,
-          info.height,
-          4,
-          4,
-        );
         const command = new PutObjectCommand({
           Bucket: env.MY_S3_BUCKET_NAME,
           Key: fileName,
@@ -165,7 +149,7 @@ export const createCatalogueItem: AppRouteHandler<CreateCatalogueItemRoute> = as
           orgId: organizationId,
           itemId,
           imageUrl: `https://${env.MY_S3_BUCKET_NAME}.s3.${env.MY_AWS_REGION}.amazonaws.com/${fileName}`,
-          blurhash,
+          blurhash: "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[",
           catalogueId,
         };
       }

@@ -4,7 +4,7 @@ import type { AppOpenAPI } from '@/lib/types.js';
 
 export default function configureOpenAPI(app: AppOpenAPI) {
   app.doc('/doc', {
-    openapi: '3.1.1',
+    openapi: '3.0.3',
     info: {
       version: '1.0.0',
       title: 'Tasks API',

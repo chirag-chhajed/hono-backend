@@ -81,18 +81,7 @@ export const login = createRoute({
       AuthErrorSchema,
       'Internal server error during authentication',
     ),
-  },
-  cookies: {
-    refreshToken: {
-      description: 'HTTP-only secure refresh token',
-      schema: {
-        type: 'string',
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-      },
-    },
-  },
+  }
 });
 
 export const refresh = createRoute({
@@ -140,18 +129,7 @@ export const refresh = createRoute({
       }),
       'Internal server error',
     ),
-  },
-  cookies: {
-    refreshToken: {
-      description: 'HTTP-only secure refresh token',
-      schema: {
-        type: 'string',
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-      },
-    },
-  },
+  }
 });
 
 export const logout = createRoute({
