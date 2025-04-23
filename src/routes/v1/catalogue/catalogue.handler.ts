@@ -242,6 +242,7 @@ export const allItems: AppRouteHandler<AllItemsRoute> = async (c) => {
         cursor,
         limit: 20,
         order: priceSort ?? order,
+        pages: 'all'
       });
       
     return c.json({
