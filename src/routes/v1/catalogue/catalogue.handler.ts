@@ -61,6 +61,7 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
       cursor,
       limit: 20,
       order,
+      pages: 'all'
     });
   const images = await Promise.all(
     catalogues.data.map(async catalogue =>
@@ -72,6 +73,7 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
         .go({
           limit: 5,
           order: 'desc',
+          pages: 'all'
         }),
     ),
   );
@@ -216,6 +218,7 @@ export const getCatalogueItems: AppRouteHandler<GetCatalogueItemsRoute> = async 
       cursor,
       limit: 20,
       order: priceSort ?? order,
+      pages: 'all'
     });
 
   return c.json(
@@ -586,6 +589,7 @@ export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (c
         .go({
           limit: 5,
           order: 'desc',
+          pages: 'all'
         }),
     ),
   );
@@ -615,6 +619,7 @@ export const searchAllCatalogueItems: AppRouteHandler<SearchAllCatalogueItemsRou
     orgId: organizationId,
   }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { begins }) => `${begins(name, search)} OR ${begins(description, search)}`).go({
     order: 'desc',
+    pages: 'all'
   });
 
   return c.json({
@@ -631,6 +636,7 @@ export const searchCatalogueItems: AppRouteHandler<SearchCatalogueItemsRoute> = 
     catalogueId,
   }).where(({ deletedAt }, { notExists }) => notExists(deletedAt)).where(({ name, description }, { begins }) => `${begins(name, search)} OR ${begins(description, search)}`).go({
     order: 'desc',
+    pages: 'all'
   }).then(items => items.data.filter(item => item.orgId === organizationId));
 
   return c.json({
