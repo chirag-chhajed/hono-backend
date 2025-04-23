@@ -14,7 +14,7 @@ const CatalogueEntity = new Entity(
       catalogueId: {
         type: 'string',
         required: true,
-        default: () => ulid(32),
+        default: () => ulid(),
       },
       orgId: { type: 'string', required: true },
       name: { type: 'string', required: true },

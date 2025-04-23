@@ -11,4 +11,4 @@ const firebaseAdmin = initializeApp({
   }),
 })
 
-export const {verifyIdToken} = getAuth(firebaseAdmin);
+export const verifyIdToken = async (idToken: string) => getAuth(firebaseAdmin).verifyIdToken(idToken);
