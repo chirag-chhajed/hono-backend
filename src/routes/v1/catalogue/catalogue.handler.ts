@@ -1,10 +1,10 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { format } from "date-fns";
-import { nanoid } from "nanoid";
-import { Buffer } from "node:buffer";
-import { ulid } from "ulid";
+import { PutObjectCommand } from '@aws-sdk/client-s3'
+import { format } from 'date-fns'
+import { nanoid } from 'nanoid'
+import { Buffer } from 'node:buffer'
+import { ulid } from 'ulid'
 
-import type { AppRouteHandler } from "@/lib/types.js";
+import type { AppRouteHandler } from '@/lib/types.js'
 import type {
   AllItemsRoute,
   BulkDeleteItemsRoute,
@@ -22,35 +22,35 @@ import type {
   SearchCataloguesRoute,
   UpdateCatalogueItemRoute,
   UpdateCatalogueRoute,
-} from "@/routes/v1/catalogue/catalogue.routes.js";
+} from '@/routes/v1/catalogue/catalogue.routes.js'
 
-import { CatalogueItemImageEntity } from "@/db/entities/catalogue-item-image.js";
-import { CatalogueItemEntity } from "@/db/entities/catalogue-item.js";
-import { CatalogueEntity } from "@/db/entities/catalogue.js";
-import { catalogueItemService } from "@/db/invitation-service.js";
-import { env } from "@/env.js";
-import { calculateAdjustedPrice } from "@/lib/calculate-adjusted-price.js";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
-import { s3Client } from "@/lib/s3Client.js";
+import { CatalogueItemImageEntity } from '@/db/entities/catalogue-item-image.js'
+import { CatalogueItemEntity } from '@/db/entities/catalogue-item.js'
+import { CatalogueEntity } from '@/db/entities/catalogue.js'
+import { catalogueItemService } from '@/db/invitation-service.js'
+import { env } from '@/env.js'
+import { calculateAdjustedPrice } from '@/lib/calculate-adjusted-price.js'
+import * as HttpStatusCodes from '@/lib/http-status-code.js'
+import { s3Client } from '@/lib/s3Client.js'
 
 export const createCatalogue: AppRouteHandler<CreateCatalogueRoute> = async (
   c,
 ) => {
-  const { name, description } = c.req.valid("json");
-  const jwtPayload = c.get("jwtPayload");
+  const { name, description } = c.req.valid('json')
+  const jwtPayload = c.get('jwtPayload')
   const catalogue = await CatalogueEntity.create({
     orgId: jwtPayload.organizationId,
     name,
     description,
     createdBy: jwtPayload.id,
-  }).go();
+  }).go()
 
-  return c.json(catalogue.data, HttpStatusCodes.CREATED);
-};
+  return c.json(catalogue.data, HttpStatusCodes.CREATED)
+}
 
 export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
-  const { cursor, order = "desc" } = c.req.valid("query");
-  const { organizationId } = c.get("jwtPayload");
+  const { cursor, order = 'desc' } = c.req.valid('query')
+  const { organizationId } = c.get('jwtPayload')
 
   const catalogues = await CatalogueEntity.query
     .byOrgId({
@@ -61,8 +61,8 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
       cursor,
       limit: 20,
       order,
-      pages: "all",
-    });
+      pages: 'all',
+    })
   const images = await Promise.all(
     catalogues.data.map(async (catalogue) =>
       CatalogueItemImageEntity.query
@@ -72,11 +72,11 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
         .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
         .go({
           limit: 5,
-          order: "desc",
-          pages: "all",
+          order: 'desc',
+          pages: 'all',
         }),
     ),
-  );
+  )
 
   const result = catalogues.data.map((catalogue) => {
     const catalogueImages =
@@ -84,13 +84,13 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
         imgResponse.data.some(
           (img) => img.catalogueId === catalogue.catalogueId,
         ),
-      )?.data || [];
+      )?.data || []
 
     return {
       ...catalogue,
       images: catalogueImages,
-    };
-  });
+    }
+  })
 
   return c.json(
     {
@@ -98,17 +98,17 @@ export const getCatalogues: AppRouteHandler<GetCataloguesRoute> = async (c) => {
       nextCursor: catalogues.cursor,
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const createCatalogueItem: AppRouteHandler<
   CreateCatalogueItemRoute
 > = async (c) => {
-  const { name, price, description } = c.req.valid("query");
-  const { organizationId } = c.get("jwtPayload");
-  const existingCatalogue = await c.req.parseBody();
-  const fileArray = Object.values(existingCatalogue) as File[];
-  const catalogueId = c.req.param("catalogueId");
+  const { name, price, description } = c.req.valid('query')
+  const { organizationId } = c.get('jwtPayload')
+  const existingCatalogue = await c.req.parseBody()
+  const fileArray = Object.values(existingCatalogue) as File[]
+  const catalogueId = c.req.param('catalogueId')
   // console.log(fileArray)
   // console.log(existingCatalogue)
   const catalogue = await CatalogueEntity.query
@@ -119,57 +119,55 @@ export const createCatalogueItem: AppRouteHandler<
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
     .go({
       count: 1,
-    });
+    })
 
   if (catalogue.data.length === 0) {
-    return c.json(
-      { message: "Catalogue not found" },
-      HttpStatusCodes.NOT_FOUND,
-    );
+    return c.json({ message: 'Catalogue not found' }, HttpStatusCodes.NOT_FOUND)
   }
 
-  const itemId = ulid();
+  const itemId = ulid()
 
   const images = await Promise.all(
     fileArray.map(async (file) => {
       try {
         const fileName = `${organizationId}/${catalogueId}/${nanoid()}.${
-          file.type.split("/")[1]
-        }`;
-        const buffer = await file.arrayBuffer();
-        const uint8Array = Buffer.from(buffer);
+          file.type.split('/')[1]
+        }`
+        const buffer = await file.arrayBuffer()
+        const uint8Array = Buffer.from(buffer)
 
         const command = new PutObjectCommand({
           Bucket: env.MY_S3_BUCKET_NAME,
           Key: fileName,
           Body: uint8Array,
           ContentType: file.type,
-          ACL: "public-read",
-        });
+          ACL: 'public-read',
+        })
 
-        await s3Client.send(command);
+        await s3Client.send(command)
 
         return {
           orgId: organizationId,
           itemId,
           imageUrl: `https://${env.MY_S3_BUCKET_NAME}.s3.${env.MY_AWS_REGION}.amazonaws.com/${fileName}`,
           blurhash:
-            "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[",
+            // eslint-disable-next-line @cspell/spellchecker
+            '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[',
           catalogueId,
-        };
+        }
       } catch (error) {
         c.var.logger.error(
           `Failed to process image: ${
-            error instanceof Error ? error.message : "Unknown error"
+            error instanceof Error ? error.message : 'Unknown error'
           }`,
-        );
-        throw new Error(`Failed to process image: ${file.name}`);
+        )
+        throw new Error(`Failed to process image: ${file.name}`)
       }
     }),
   ).catch((error) => {
-    console.error("Detailed error:", error);
-    throw new Error(`Failed to process images`);
-  });
+    console.error('Detailed error:', error)
+    throw new Error(`Failed to process images`)
+  })
 
   await catalogueItemService.transaction
     .write(({ catalogueItem, catalogueImages }) => [
@@ -201,23 +199,23 @@ export const createCatalogueItem: AppRouteHandler<
           .commit(),
       ),
     ])
-    .go();
+    .go()
 
   return c.json(
-    { message: "File uploaded successfully" },
+    { message: 'File uploaded successfully' },
     HttpStatusCodes.CREATED,
-  );
-};
+  )
+}
 
 export const getCatalogueItems: AppRouteHandler<
   GetCatalogueItemsRoute
 > = async (c) => {
-  const { cursor, order = "desc", priceSort } = c.req.valid("query");
-  const { catalogueId } = c.req.param();
+  const { cursor, order = 'desc', priceSort } = c.req.valid('query')
+  const { catalogueId } = c.req.param()
 
   const query = priceSort
     ? CatalogueItemEntity.query.byPrice({ catalogueId })
-    : CatalogueItemEntity.query.primary({ catalogueId });
+    : CatalogueItemEntity.query.primary({ catalogueId })
 
   const items = await query
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
@@ -225,8 +223,8 @@ export const getCatalogueItems: AppRouteHandler<
       cursor,
       limit: 20,
       order: priceSort ?? order,
-      pages: "all",
-    });
+      pages: 'all',
+    })
 
   return c.json(
     {
@@ -234,19 +232,19 @@ export const getCatalogueItems: AppRouteHandler<
       nextCursor: items.cursor,
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const allItems: AppRouteHandler<AllItemsRoute> = async (c) => {
-  const { cursor, order = "desc", priceSort } = c.req.valid("query");
+  const { cursor, order = 'desc', priceSort } = c.req.valid('query')
 
-  const { organizationId } = c.get("jwtPayload");
+  const { organizationId } = c.get('jwtPayload')
 
   const query = priceSort
     ? CatalogueItemEntity.query.byOrganizationAndPrice({
         orgId: organizationId,
       })
-    : CatalogueItemEntity.query.byOrganization({ orgId: organizationId });
+    : CatalogueItemEntity.query.byOrganization({ orgId: organizationId })
 
   const { data, cursor: nextCursor } = await query
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
@@ -254,8 +252,8 @@ export const allItems: AppRouteHandler<AllItemsRoute> = async (c) => {
       cursor,
       limit: 20,
       order: priceSort ?? order,
-      pages: "all",
-    });
+      pages: 'all',
+    })
 
   return c.json(
     {
@@ -263,43 +261,43 @@ export const allItems: AppRouteHandler<AllItemsRoute> = async (c) => {
       nextCursor: nextCursor ?? null,
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 type catalogueDetails = {
-  description?: string | undefined;
-  name: string;
-  catalogueId: string;
-  orgId: string;
-  createdBy: string;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | undefined;
-};
+  description?: string | undefined
+  name: string
+  catalogueId: string
+  orgId: string
+  createdBy: string
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number | undefined
+}
 
 export const bulkUpdatePrices: AppRouteHandler<BulkUpdatePricesRoute> = async (
   c,
 ) => {
   const { items, operation, value, mode, direction, newCatalogueId } =
-    c.req.valid("json");
+    c.req.valid('json')
 
-  const { organizationId, id: userId } = c.get("jwtPayload");
+  const { organizationId, id: userId } = c.get('jwtPayload')
 
   const existingItems = (await CatalogueItemEntity.get(items).go()).data.filter(
     (item) => item.orgId === organizationId && item.deletedAt == null,
-  );
+  )
 
   if (items.length !== existingItems.length) {
     return c.json(
       {
-        message: "Invalid items",
+        message: 'Invalid items',
       },
       HttpStatusCodes.BAD_REQUEST,
-    );
+    )
   }
 
-  if (operation === "clone") {
-    let catalogueDetails: catalogueDetails;
+  if (operation === 'clone') {
+    let catalogueDetails: catalogueDetails
     if (newCatalogueId != null) {
       const existingCatalogue = await CatalogueEntity.query
         .primary({
@@ -309,26 +307,26 @@ export const bulkUpdatePrices: AppRouteHandler<BulkUpdatePricesRoute> = async (
         .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
         .go({
           count: 1,
-        });
-      catalogueDetails = existingCatalogue.data[0];
+        })
+      catalogueDetails = existingCatalogue.data[0]
     } else {
       const newCatalogue = await CatalogueEntity.create({
         orgId: organizationId,
-        name: `${mode === "percentage" ? `${value}%` : `₹${value}`} ${direction} Price ${format(new Date(), "MMM d, yyyy")}`,
-        description: `Catalogue snapshot with ${direction === "increase" ? "increased" : "decreased"} prices by ${mode === "percentage" ? `${value}%` : `₹${value}`} on ${format(new Date(), "MMM d, yyyy")}`,
+        name: `${mode === 'percentage' ? `${value}%` : `₹${value}`} ${direction} Price ${format(new Date(), 'MMM d, yyyy')}`,
+        description: `Catalogue snapshot with ${direction === 'increase' ? 'increased' : 'decreased'} prices by ${mode === 'percentage' ? `${value}%` : `₹${value}`} on ${format(new Date(), 'MMM d, yyyy')}`,
         createdBy: userId,
-      }).go();
-      catalogueDetails = newCatalogue.data;
+      }).go()
+      catalogueDetails = newCatalogue.data
     }
     const ids = Array.from(
       {
         length: existingItems.length,
       },
       () => ulid(),
-    );
+    )
     const existingImages = await CatalogueItemImageEntity.get(
       existingItems.map((item) => ({ itemId: item.itemId })),
-    ).go();
+    ).go()
 
     const newItems = existingItems.map((item, index) => {
       return {
@@ -341,23 +339,23 @@ export const bulkUpdatePrices: AppRouteHandler<BulkUpdatePricesRoute> = async (
           value,
         }),
         itemId: ids[index],
-      };
-    });
+      }
+    })
 
     const newImages = existingImages.data.map((image, index) => {
       return {
         ...image,
         itemId: ids[index],
         catalogueId: catalogueDetails.catalogueId,
-      };
-    });
+      }
+    })
 
     await catalogueItemService.transaction
       .write(({ catalogueItem, catalogueImages }) => [
         ...newItems.map((item) => catalogueItem.create(item).commit()),
         ...newImages.map((image) => catalogueImages.create(image).commit()),
       ])
-      .go();
+      .go()
   } else {
     await CatalogueItemEntity.put(
       existingItems.map((item) => ({
@@ -369,44 +367,44 @@ export const bulkUpdatePrices: AppRouteHandler<BulkUpdatePricesRoute> = async (
           value,
         }),
       })),
-    ).go();
+    ).go()
   }
 
   return c.json(
     {
-      message: "Prices updated successfully",
+      message: 'Prices updated successfully',
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const bulkTransferItems: AppRouteHandler<
   BulkTransferItemsRoute
 > = async (c) => {
-  const { items, newCatalogueId, operation } = c.req.valid("json");
+  const { items, newCatalogueId, operation } = c.req.valid('json')
 
-  const { organizationId, id: userId } = c.get("jwtPayload");
-  let catalogueDetails: catalogueDetails;
+  const { organizationId, id: userId } = c.get('jwtPayload')
+  let catalogueDetails: catalogueDetails
   const existingItems = (await CatalogueItemEntity.get(items).go()).data.filter(
     (item) => item.orgId === organizationId && item.deletedAt == null,
-  );
+  )
   if (items.length !== existingItems.length) {
     return c.json(
       {
-        message: "Invalid items",
+        message: 'Invalid items',
       },
       HttpStatusCodes.BAD_REQUEST,
-    );
+    )
   }
   const ids = Array.from(
     {
       length: existingItems.length,
     },
     () => ulid(),
-  );
+  )
   const existingImages = await CatalogueItemImageEntity.get(
     existingItems.map((item) => ({ itemId: item.itemId })),
-  ).go();
+  ).go()
 
   if (newCatalogueId != null) {
     const existingCatalogue = await CatalogueEntity.query
@@ -417,41 +415,41 @@ export const bulkTransferItems: AppRouteHandler<
       .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
       .go({
         count: 1,
-      });
-    catalogueDetails = existingCatalogue.data[0];
+      })
+    catalogueDetails = existingCatalogue.data[0]
   } else {
     const newCatalogue = await CatalogueEntity.create({
       orgId: organizationId,
-      name: `Copy of Items - ${format(new Date(), "MMM d")}`,
-      description: `Items copied from another catalogue on ${format(new Date(), "MMMM d, yyyy")}`,
+      name: `Copy of Items - ${format(new Date(), 'MMM d')}`,
+      description: `Items copied from another catalogue on ${format(new Date(), 'MMMM d, yyyy')}`,
       createdBy: userId,
-    }).go();
-    catalogueDetails = newCatalogue.data;
+    }).go()
+    catalogueDetails = newCatalogue.data
   }
   const newItems = existingItems.map((item, index) => {
     return {
       ...item,
       catalogueId: catalogueDetails.catalogueId,
       itemId: ids[index],
-    };
-  });
+    }
+  })
 
   const newImages = existingImages.data.map((image, index) => {
     return {
       ...image,
       itemId: ids[index],
       catalogueId: catalogueDetails.catalogueId,
-    };
-  });
-  if (operation === "clone") {
+    }
+  })
+  if (operation === 'clone') {
     await catalogueItemService.transaction
       .write(({ catalogueItem, catalogueImages }) => [
         ...newItems.map((item) => catalogueItem.create(item).commit()),
         ...newImages.map((image) => catalogueImages.create(image).commit()),
       ])
-      .go();
+      .go()
   } else {
-    const now = Date.now();
+    const now = Date.now()
 
     await catalogueItemService.transaction
       .write(({ catalogueItem, catalogueImages }) => [
@@ -464,39 +462,39 @@ export const bulkTransferItems: AppRouteHandler<
         ...newItems.map((item) => catalogueItem.create(item).commit()),
         ...newImages.map((image) => catalogueImages.create(image).commit()),
       ])
-      .go();
+      .go()
   }
   return c.json(
     {
-      message: "Items transferred successfully",
+      message: 'Items transferred successfully',
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const bulkDeleteItems: AppRouteHandler<BulkDeleteItemsRoute> = async (
   c,
 ) => {
-  const { items } = c.req.valid("json");
-  const { organizationId } = c.get("jwtPayload");
+  const { items } = c.req.valid('json')
+  const { organizationId } = c.get('jwtPayload')
 
   const existingItems = (await CatalogueItemEntity.get(items).go()).data.filter(
     (item) => item.orgId === organizationId && item.deletedAt == null,
-  );
+  )
 
   if (items.length !== existingItems.length) {
     return c.json(
       {
-        message: "Invalid items",
+        message: 'Invalid items',
       },
       HttpStatusCodes.BAD_REQUEST,
-    );
+    )
   }
   const existingImages = await CatalogueItemImageEntity.get(
     existingItems.map((item) => ({ itemId: item.itemId })),
-  ).go();
+  ).go()
 
-  const now = Date.now();
+  const now = Date.now()
 
   await catalogueItemService.transaction
     .write(({ catalogueItem, catalogueImages }) => [
@@ -507,22 +505,22 @@ export const bulkDeleteItems: AppRouteHandler<BulkDeleteItemsRoute> = async (
         catalogueImages.put({ ...image, deletedAt: now }).commit(),
       ),
     ])
-    .go();
+    .go()
 
   return c.json(
     {
-      message: "Items deleted successfully",
+      message: 'Items deleted successfully',
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const updateCatalogue: AppRouteHandler<UpdateCatalogueRoute> = async (
   c,
 ) => {
-  const { name, description } = c.req.valid("json");
-  const { catalogueId } = c.req.param();
-  const { organizationId } = c.get("jwtPayload");
+  const { name, description } = c.req.valid('json')
+  const { catalogueId } = c.req.param()
+  const { organizationId } = c.get('jwtPayload')
 
   await CatalogueEntity.patch({
     catalogueId,
@@ -532,21 +530,21 @@ export const updateCatalogue: AppRouteHandler<UpdateCatalogueRoute> = async (
       name,
       description,
     })
-    .go();
+    .go()
 
   return c.json(
     {
-      message: "Catalogue updated successfully",
+      message: 'Catalogue updated successfully',
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const deleteCatalogue: AppRouteHandler<DeleteCatalogueRoute> = async (
   c,
 ) => {
-  const { catalogueId } = c.req.param();
-  const { organizationId } = c.get("jwtPayload");
+  const { catalogueId } = c.req.param()
+  const { organizationId } = c.get('jwtPayload')
 
   const items = await CatalogueItemEntity.query
     .primary({
@@ -554,15 +552,15 @@ export const deleteCatalogue: AppRouteHandler<DeleteCatalogueRoute> = async (
       orgId: organizationId,
     })
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
-    .go();
+    .go()
 
   if (items.data.length > 0) {
     return c.json(
       {
-        message: "Catalogue is not empty",
+        message: 'Catalogue is not empty',
       },
       HttpStatusCodes.BAD_REQUEST,
-    );
+    )
   }
 
   await CatalogueEntity.patch({
@@ -572,39 +570,39 @@ export const deleteCatalogue: AppRouteHandler<DeleteCatalogueRoute> = async (
     .set({
       deletedAt: Date.now(),
     })
-    .go();
+    .go()
 
-  return c.newResponse(null, HttpStatusCodes.NO_CONTENT);
-};
+  return c.newResponse(null, HttpStatusCodes.NO_CONTENT)
+}
 
 export const getCatalogueItem: AppRouteHandler<GetCatalogueItemRoute> = async (
   c,
 ) => {
-  const { catalogueId, itemId } = c.req.param();
+  const { catalogueId, itemId } = c.req.param()
 
   const catalogueItem = await CatalogueItemEntity.get({
     catalogueId,
     itemId,
-  }).go();
+  }).go()
 
   if (!catalogueItem.data) {
     return c.json(
       {
-        message: "Catalogue item not found",
+        message: 'Catalogue item not found',
       },
       HttpStatusCodes.NOT_FOUND,
-    );
+    )
   }
 
-  return c.json(catalogueItem.data, HttpStatusCodes.OK);
-};
+  return c.json(catalogueItem.data, HttpStatusCodes.OK)
+}
 
 export const updateCatalogueItem: AppRouteHandler<
   UpdateCatalogueItemRoute
 > = async (c) => {
-  const { name, description, price } = c.req.valid("json");
-  const { catalogueId, itemId } = c.req.param();
-  const { organizationId } = c.get("jwtPayload");
+  const { name, description, price } = c.req.valid('json')
+  const { catalogueId, itemId } = c.req.param()
+  const { organizationId } = c.get('jwtPayload')
 
   const catalogue = await CatalogueEntity.query
     .primary({
@@ -614,15 +612,15 @@ export const updateCatalogueItem: AppRouteHandler<
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
     .go({
       count: 1,
-    });
+    })
 
   if (catalogue.data.length === 0) {
     return c.json(
       {
-        message: "Catalogue not found",
+        message: 'Catalogue not found',
       },
       HttpStatusCodes.NOT_FOUND,
-    );
+    )
   }
 
   await catalogueItemService.transaction
@@ -639,21 +637,21 @@ export const updateCatalogueItem: AppRouteHandler<
         })
         .commit(),
     ])
-    .go();
+    .go()
 
   return c.json(
     {
-      message: "Catalogue item updated successfully",
+      message: 'Catalogue item updated successfully',
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const deleteCatalogueItem: AppRouteHandler<
   DeleteCatalogueItemRoute
 > = async (c) => {
-  const { itemId, catalogueId } = c.req.param();
-  const { organizationId } = c.get("jwtPayload");
+  const { itemId, catalogueId } = c.req.param()
+  const { organizationId } = c.get('jwtPayload')
   const catalogue = await CatalogueEntity.query
     .primary({
       catalogueId,
@@ -662,18 +660,18 @@ export const deleteCatalogueItem: AppRouteHandler<
     .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
     .go({
       count: 1,
-    });
+    })
 
   if (catalogue.data.length === 0) {
     return c.json(
       {
-        message: "Catalogue not found",
+        message: 'Catalogue not found',
       },
       HttpStatusCodes.NOT_FOUND,
-    );
+    )
   }
 
-  const now = Date.now();
+  const now = Date.now()
 
   await catalogueItemService.transaction
     .write(({ catalogueItem, catalogueImages }) => [
@@ -695,17 +693,17 @@ export const deleteCatalogueItem: AppRouteHandler<
         })
         .commit(),
     ])
-    .go();
+    .go()
 
-  return c.newResponse(null, HttpStatusCodes.NO_CONTENT);
-};
+  return c.newResponse(null, HttpStatusCodes.NO_CONTENT)
+}
 
 export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (
   c,
 ) => {
-  const { search } = c.req.valid("query");
+  const { search } = c.req.valid('query')
 
-  const { organizationId } = c.get("jwtPayload");
+  const { organizationId } = c.get('jwtPayload')
   const catalogues = await CatalogueEntity.query
     .byOrgId({
       orgId: organizationId,
@@ -715,7 +713,7 @@ export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (
       ({ name, description }, { begins }) =>
         `${begins(name, search)} OR ${begins(description, search)}`,
     )
-    .go();
+    .go()
 
   const images = await Promise.all(
     catalogues.data.map(async (catalogue) =>
@@ -726,11 +724,11 @@ export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (
         .where(({ deletedAt }, { notExists }) => notExists(deletedAt))
         .go({
           limit: 5,
-          order: "desc",
-          pages: "all",
+          order: 'desc',
+          pages: 'all',
         }),
     ),
-  );
+  )
 
   const result = catalogues.data.map((catalogue) => {
     const catalogueImages =
@@ -738,26 +736,26 @@ export const searchCatalogues: AppRouteHandler<SearchCataloguesRoute> = async (
         imgResponse.data.some(
           (img) => img.catalogueId === catalogue.catalogueId,
         ),
-      )?.data || [];
+      )?.data || []
 
     return {
       ...catalogue,
       images: catalogueImages,
-    };
-  });
+    }
+  })
   return c.json(
     {
       items: result,
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const searchAllCatalogueItems: AppRouteHandler<
   SearchAllCatalogueItemsRoute
 > = async (c) => {
-  const { search } = c.req.valid("query");
-  const { organizationId } = c.get("jwtPayload");
+  const { search } = c.req.valid('query')
+  const { organizationId } = c.get('jwtPayload')
   const items = await CatalogueItemEntity.query
     .byOrganization({
       orgId: organizationId,
@@ -768,24 +766,24 @@ export const searchAllCatalogueItems: AppRouteHandler<
         `${begins(name, search)} OR ${begins(description, search)}`,
     )
     .go({
-      order: "desc",
-      pages: "all",
-    });
+      order: 'desc',
+      pages: 'all',
+    })
 
   return c.json(
     {
       items: items.data,
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}
 
 export const searchCatalogueItems: AppRouteHandler<
   SearchCatalogueItemsRoute
 > = async (c) => {
-  const { search } = c.req.valid("query");
-  const { catalogueId } = c.req.param();
-  const { organizationId } = c.get("jwtPayload");
+  const { search } = c.req.valid('query')
+  const { catalogueId } = c.req.param()
+  const { organizationId } = c.get('jwtPayload')
 
   const items = await CatalogueItemEntity.query
     .primary({
@@ -797,17 +795,15 @@ export const searchCatalogueItems: AppRouteHandler<
         `${begins(name, search)} OR ${begins(description, search)}`,
     )
     .go({
-      order: "desc",
-      pages: "all",
+      order: 'desc',
+      pages: 'all',
     })
-    .then((items) =>
-      items.data.filter((item) => item.orgId === organizationId),
-    );
+    .then((items) => items.data.filter((item) => item.orgId === organizationId))
 
   return c.json(
     {
       items,
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}

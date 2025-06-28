@@ -1,24 +1,24 @@
-import { addDays, isPast } from "date-fns";
-import { nanoid } from "nanoid";
+import { addDays, isPast } from 'date-fns'
+import { nanoid } from 'nanoid'
 
-import type { AppRouteHandler } from "@/lib/types.js";
+import type { AppRouteHandler } from '@/lib/types.js'
 import type {
   AcceptInvitationRoute,
   CreateInvitationRoute,
   GetInvitationsRoute,
-} from "@/routes/v1/invitation/invitation.routes.js";
+} from '@/routes/v1/invitation/invitation.routes.js'
 
-import { InvitationEntity } from "@/db/entities/invitation.js";
-import { OrganizationEntity } from "@/db/entities/organization.js";
-import { UserOrganizationEntity } from "@/db/entities/user-organization.js";
-import { InvitationService } from "@/db/invitation-service.js";
-import * as HttpStatusCodes from "@/lib/http-status-code.js";
+import { InvitationEntity } from '@/db/entities/invitation.js'
+import { OrganizationEntity } from '@/db/entities/organization.js'
+import { UserOrganizationEntity } from '@/db/entities/user-organization.js'
+import { InvitationService } from '@/db/invitation-service.js'
+import * as HttpStatusCodes from '@/lib/http-status-code.js'
 
 export const createInvitation: AppRouteHandler<CreateInvitationRoute> = async (
   c,
 ) => {
-  const { role } = c.req.valid("json");
-  const { id, organizationId } = c.get("jwtPayload");
+  const { role } = c.req.valid('json')
+  const { id, organizationId } = c.get('jwtPayload')
 
   const invitation = await InvitationEntity.create({
     code: nanoid(10),
@@ -26,89 +26,89 @@ export const createInvitation: AppRouteHandler<CreateInvitationRoute> = async (
     createdBy: id,
     role,
     expiresAt: addDays(new Date(), 7).getTime(),
-  }).go();
+  }).go()
 
   return c.json(
     {
       inviteCode: invitation.data.code,
     },
     HttpStatusCodes.CREATED,
-  );
-};
+  )
+}
 
 export const getInvitations: AppRouteHandler<GetInvitationsRoute> = async (
   c,
 ) => {
-  const { organizationId } = c.get("jwtPayload");
+  const { organizationId } = c.get('jwtPayload')
 
   const invitations = await InvitationEntity.query
     .primary({
       orgId: organizationId,
     })
-    .go();
+    .go()
 
-  return c.json(invitations.data, HttpStatusCodes.OK);
-};
+  return c.json(invitations.data, HttpStatusCodes.OK)
+}
 
 export const acceptInvitation: AppRouteHandler<AcceptInvitationRoute> = async (
   c,
 ) => {
-  const { code } = c.req.valid("json");
-  const { id } = c.get("jwtPayload");
+  const { code } = c.req.valid('json')
+  const { id } = c.get('jwtPayload')
 
   const userOrgs = await UserOrganizationEntity.query
     .byUser({
       userId: id,
     })
-    .go();
+    .go()
 
   const invitation = await InvitationEntity.query
     .byCode({
       code,
     })
-    .go();
+    .go()
 
   const org = await OrganizationEntity.get({
     orgId: invitation.data[0].orgId,
-  }).go();
+  }).go()
 
   if (org.data?.name === undefined || org.data?.name === null) {
     return c.json(
       {
-        message: "Organization not found",
+        message: 'Organization not found',
       },
       HttpStatusCodes.NOT_FOUND,
-    );
+    )
   }
   if (!invitation.data.length) {
     return c.json(
       {
-        message: "Invitation not found",
+        message: 'Invitation not found',
       },
       HttpStatusCodes.NOT_FOUND,
-    );
+    )
   }
 
   if (isPast(invitation.data[0].expiresAt)) {
     return c.json(
       {
-        message: "Invitation expired",
+        message: 'Invitation expired',
       },
       HttpStatusCodes.BAD_REQUEST,
-    );
+    )
   }
 
   const userOrg = userOrgs.data.find(
     (org) => org.orgId === invitation.data[0].orgId,
-  );
+  )
 
   if (userOrg) {
     return c.json(
       {
-        message: "User already in organization",
+        message: 'User already in organization',
       },
       HttpStatusCodes.BAD_REQUEST,
-    );
+    )
   }
 
   await InvitationService.transaction
@@ -133,12 +133,12 @@ export const acceptInvitation: AppRouteHandler<AcceptInvitationRoute> = async (
         })
         .commit(),
     ])
-    .go();
+    .go()
 
   return c.json(
     {
-      message: "Invitation accepted",
+      message: 'Invitation accepted',
     },
     HttpStatusCodes.OK,
-  );
-};
+  )
+}

@@ -3,10 +3,10 @@ services:
     image: amazon/dynamodb-local
     container_name: dynamodb-local
     ports:
-      - "8000:8000"
+      - '8000:8000'
     command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
     volumes:
-      - "./dynamodb_data:/data"
+      - './dynamodb_data:/data'
     environment:
       - AWS_ACCESS_KEY_ID=local
       - AWS_SECRET_ACCESS_KEY=local

@@ -1,41 +1,41 @@
-import antfu from "@antfu/eslint-config";
-import cspell from "@cspell/eslint-plugin";
+import antfu from '@antfu/eslint-config'
+import cspell from '@cspell/eslint-plugin'
 
 export default antfu({
   plugins: {
-    "@cspell": cspell,
+    '@cspell': cspell,
   },
   typescript: {
-    tsconfigPath: "tsconfig.json",
+    tsconfigPath: 'tsconfig.json',
   },
   rules: {
-    "perfectionist/sort-imports": [
-      "error",
+    'perfectionist/sort-imports': [
+      'error',
       {
-        tsconfigRootDir: ".",
+        tsconfigRootDir: '.',
       },
     ],
-    "@cspell/spellchecker": [
-      "warn",
+    '@cspell/spellchecker': [
+      'warn',
       {
         cspell: {
           words: [
-            "blurhash",
-            "dotenvx",
-            "electrodb",
-            "organisation",
-            "Organisations",
+            'blurhash',
+            'dotenvx',
+            'electrodb',
+            'organisation',
+            'Organisations',
           ],
         },
       },
     ],
-    "ts/consistent-type-definitions": ["warn", "type"],
+    'ts/consistent-type-definitions': ['warn', 'type'],
 
-    "format/prettier": [
-      "warn",
+    'format/prettier': [
+      'warn',
       {
-        singleQuote: false,
-        semi: true,
+        singleQuote: true,
+        semi: false,
       },
     ],
   },
@@ -48,4 +48,4 @@ export default antfu({
   stylistic: false,
   markdown: true,
   yaml: true,
-});
+})

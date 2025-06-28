@@ -1,5 +1,5 @@
-import { handle } from "hono/aws-lambda";
+import { handle } from 'hono/aws-lambda'
 
-import app from "@/app.js";
+import app from '@/app.js'
 // for deploying on aws lambda
-export const handler = handle(app);
+export const handler = handle(app)

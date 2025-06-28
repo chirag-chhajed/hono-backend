@@ -1,11 +1,11 @@
-import { Decimal } from "decimal.js";
+import { Decimal } from 'decimal.js'
 
 type PriceCalculationArgs = {
-  mode: "absolute" | "percentage";
-  direction: "increase" | "decrease";
-  price: number;
-  value: number;
-};
+  mode: 'absolute' | 'percentage'
+  direction: 'increase' | 'decrease'
+  price: number
+  value: number
+}
 
 export function calculateAdjustedPrice({
   mode,
@@ -13,24 +13,24 @@ export function calculateAdjustedPrice({
   price,
   value,
 }: PriceCalculationArgs): number {
-  const currentPrice = new Decimal(price);
-  const adjustment = new Decimal(value);
+  const currentPrice = new Decimal(price)
+  const adjustment = new Decimal(value)
 
-  let newPrice: Decimal;
+  let newPrice: Decimal
 
-  if (mode === "percentage") {
-    const percentageFactor = adjustment.div(100);
+  if (mode === 'percentage') {
+    const percentageFactor = adjustment.div(100)
     newPrice =
-      direction === "increase"
+      direction === 'increase'
         ? currentPrice.times(percentageFactor.plus(1))
-        : currentPrice.times(new Decimal(1).minus(percentageFactor));
+        : currentPrice.times(new Decimal(1).minus(percentageFactor))
   } else {
     newPrice =
-      direction === "increase"
+      direction === 'increase'
         ? currentPrice.plus(adjustment)
-        : currentPrice.minus(adjustment);
+        : currentPrice.minus(adjustment)
   }
 
   // Ensure price doesn't go negative
-  return newPrice.lessThan(0) ? 0 : newPrice.toDecimalPlaces(2).toNumber();
+  return newPrice.lessThan(0) ? 0 : newPrice.toDecimalPlaces(2).toNumber()
 }

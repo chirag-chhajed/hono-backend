@@ -1,55 +1,55 @@
-import { Entity } from "electrodb";
-import { ulid } from "ulid";
+import { Entity } from 'electrodb'
+import { ulid } from 'ulid'
 
-import { dynamoClient, TABLE_NAME } from "@/db/client.js";
+import { dynamoClient, TABLE_NAME } from '@/db/client.js'
 
 // Define the User entity
 export const UserEntity = new Entity(
   {
     model: {
-      entity: "user",
-      version: "1",
-      service: "app",
+      entity: 'user',
+      version: '1',
+      service: 'app',
     },
     attributes: {
-      userId: { type: "string", required: true, default: () => ulid() },
-      email: { type: "string", required: true },
-      name: { type: "string", required: true },
+      userId: { type: 'string', required: true, default: () => ulid() },
+      email: { type: 'string', required: true },
+      name: { type: 'string', required: true },
       createdAt: {
-        type: "number",
+        type: 'number',
         required: true,
         default: () => Date.now(),
         readOnly: true,
         set: () => Date.now(),
       },
       updatedAt: {
-        type: "number",
+        type: 'number',
         required: true,
         default: () => Date.now(),
-        watch: "*",
+        watch: '*',
         set: () => Date.now(),
       },
     },
     indexes: {
       primary: {
         pk: {
-          field: "pk",
-          composite: ["userId"],
+          field: 'pk',
+          composite: ['userId'],
         },
         sk: {
-          field: "sk",
-          composite: ["userId"],
+          field: 'sk',
+          composite: ['userId'],
         },
       },
       byEmail: {
-        index: "gsi1",
+        index: 'gsi1',
         pk: {
-          field: "gsi1pk",
-          composite: ["email"],
+          field: 'gsi1pk',
+          composite: ['email'],
         },
         sk: {
-          field: "gsi1sk",
-          composite: ["userId"],
+          field: 'gsi1sk',
+          composite: ['userId'],
         },
       },
     },
@@ -58,4 +58,4 @@ export const UserEntity = new Entity(
     client: dynamoClient,
     table: TABLE_NAME,
   },
-);
+)
