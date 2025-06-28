@@ -1,7 +1,7 @@
-import { createRoute, z } from '@hono/zod-openapi';
+import { createRoute, z } from "@hono/zod-openapi";
 
-import * as HttpStatusCodes from '@/lib/http-status-code.js';
-import { jsonContent } from '@/lib/openapi/helpers/json-content.js';
+import * as HttpStatusCodes from "@/lib/http-status-code.js";
+import { jsonContent } from "@/lib/openapi/helpers/json-content.js";
 
 // Validation error schema
 const ValidationErrorSchema = z.object({
@@ -34,17 +34,17 @@ const SuccessResponseSchema = z.object({
 });
 
 export const login = createRoute({
-  tags: ['Auth'],
-  path: '/auth/login',
-  method: 'post',
+  tags: ["Auth"],
+  path: "/auth/login",
+  method: "post",
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
-            name: z.string().trim().min(1, 'Name is required'),
-            email: z.string().email('Invalid email format'),
-            idToken: z.string().trim().min(1, 'ID Token is required'),
+            name: z.string().trim().min(1, "Name is required"),
+            email: z.string().email("Invalid email format"),
+            idToken: z.string().trim().min(1, "ID Token is required"),
           }),
         },
       },
@@ -60,34 +60,34 @@ export const login = createRoute({
           email: z.string().email(),
         }),
       }),
-      'Successful login response',
+      "Successful login response",
     ),
     [HttpStatusCodes.NO_CONTENT]: jsonContent(
       z.object({
         success: z.literal(false),
         message: z.string(),
       }),
-      'User already exists',
+      "User already exists",
     ),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       ValidationErrorSchema,
-      'Validation error',
+      "Validation error",
     ),
     [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
       FirebaseAuthErrorSchema,
-      'Firebase authentication failed',
+      "Firebase authentication failed",
     ),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
       AuthErrorSchema,
-      'Internal server error during authentication',
+      "Internal server error during authentication",
     ),
-  }
+  },
 });
 
 export const refresh = createRoute({
-  tags: ['Auth'],
-  path: '/auth/refresh',
-  method: 'get',
+  tags: ["Auth"],
+  path: "/auth/refresh",
+  method: "get",
   request: {
     query: z.object({
       organizationId: z.string().optional(),
@@ -103,50 +103,50 @@ export const refresh = createRoute({
           email: z.string().email(),
         }),
       }),
-      'Token refresh successful',
+      "Token refresh successful",
     ),
     [HttpStatusCodes.NO_CONTENT]: {
-      description: 'No refresh token found',
+      description: "No refresh token found",
     },
     [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
       z.object({
         success: z.boolean(),
         message: z.string(),
       }),
-      'Invalid refresh token',
+      "Invalid refresh token",
     ),
     [HttpStatusCodes.FORBIDDEN]: jsonContent(
       z.object({
         success: z.boolean(),
         message: z.string(),
       }),
-      'Expired refresh token',
+      "Expired refresh token",
     ),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
       z.object({
         success: z.boolean(),
         message: z.string(),
       }),
-      'Internal server error',
+      "Internal server error",
     ),
-  }
+  },
 });
 
 export const logout = createRoute({
-  tags: ['Auth'],
-  path: '/auth/logout',
-  method: 'post',
+  tags: ["Auth"],
+  path: "/auth/logout",
+  method: "post",
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       SuccessResponseSchema,
-      'Successfully logged out',
+      "Successfully logged out",
     ),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
       z.object({
         success: z.boolean(),
         message: z.string(),
       }),
-      'Internal server error',
+      "Internal server error",
     ),
   },
 });

@@ -1,7 +1,7 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
-import { env } from '@/env.js';
+import { env } from "@/env.js";
 
 // Create the base DynamoDB client for local development
 const client = new DynamoDBClient({
@@ -15,4 +15,4 @@ const client = new DynamoDBClient({
 // Create the document client
 export const dynamoClient = DynamoDBDocumentClient.from(client);
 
-export const TABLE_NAME = 'app-data';
+export const TABLE_NAME = "app-data";

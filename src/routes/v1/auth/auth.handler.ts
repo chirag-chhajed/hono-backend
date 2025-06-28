@@ -1,29 +1,30 @@
-import type { DecodedIdToken } from 'firebase-admin/auth';
+import type { DecodedIdToken } from "firebase-admin/auth";
 
-import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
-import { decode, verify } from 'hono/jwt';
-import { JwtTokenExpired } from 'hono/utils/jwt/types';
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
+import { decode, verify } from "hono/jwt";
+import { JwtTokenExpired } from "hono/utils/jwt/types";
 
-import type { BaseTokenPayload, OrgTokenPayload } from '@/lib/generate-tokens.js';
-import type { AppRouteHandler } from '@/lib/types.js';
+import type {
+  BaseTokenPayload,
+  OrgTokenPayload,
+} from "@/lib/generate-tokens.js";
+import type { AppRouteHandler } from "@/lib/types.js";
 import type {
   LoginRoute,
   LogoutRoute,
   RefreshRoute,
-} from '@/routes/v1/auth/auth.routes.js';
+} from "@/routes/v1/auth/auth.routes.js";
 
-import { UserOrganizationEntity } from '@/db/entities/user-organization.js';
-import { UserEntity } from '@/db/entities/user.js';
-import { env } from '@/env.js';
-import {
-  generateTokens,
-} from '@/lib/generate-tokens.js';
-import * as HttpStatusCodes from '@/lib/http-status-code.js';
-import { verifyIdToken } from '@/lib/verify-token.js';
+import { UserOrganizationEntity } from "@/db/entities/user-organization.js";
+import { UserEntity } from "@/db/entities/user.js";
+import { env } from "@/env.js";
+import { generateTokens } from "@/lib/generate-tokens.js";
+import * as HttpStatusCodes from "@/lib/http-status-code.js";
+import { verifyIdToken } from "@/lib/verify-token.js";
 
 export const login: AppRouteHandler<LoginRoute> = async (c) => {
   try {
-    const { name, email, idToken } = c.req.valid('json');
+    const { name, email, idToken } = c.req.valid("json");
 
     // Step 1: Verify Firebase ID token
     let decodedToken: DecodedIdToken;
@@ -33,8 +34,8 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       return c.json(
         {
           success: false,
-          code: 'FIREBASE_AUTH_ERROR',
-          message: 'Invalid or expired Firebase token',
+          code: "FIREBASE_AUTH_ERROR",
+          message: "Invalid or expired Firebase token",
         },
         HttpStatusCodes.UNAUTHORIZED,
       );
@@ -45,8 +46,8 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       return c.json(
         {
           success: false,
-          code: 'EMAIL_MISMATCH',
-          message: 'Token email does not match provided email',
+          code: "EMAIL_MISMATCH",
+          message: "Token email does not match provided email",
         },
         HttpStatusCodes.UNAUTHORIZED,
       );
@@ -71,7 +72,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
       }).go();
 
       if (Object.keys(newUserResult.data).length === 0) {
-        throw new Error('Failed to create user');
+        throw new Error("Failed to create user");
       }
       finalUser = newUserResult.data;
     } else {
@@ -86,10 +87,10 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
     });
 
     // Step 5: Set refresh token in cookie
-    setCookie(c, 'refreshToken', refreshToken, {
+    setCookie(c, "refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60,
     });
 
@@ -110,29 +111,28 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
     return c.json(
       {
         success: false,
-        message: 'An unexpected error occurred during authentication',
+        message: "An unexpected error occurred during authentication",
       },
       HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
   }
 };
 
-
 export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
   try {
-    const query = c.req.valid('query');
-    const refreshToken = getCookie(c, 'refreshToken');
+    const query = c.req.valid("query");
+    const refreshToken = getCookie(c, "refreshToken");
 
-    if (!refreshToken) {
+    if (refreshToken == null) {
       return c.newResponse(null, HttpStatusCodes.NO_CONTENT);
     }
 
     try {
-      await verify(refreshToken, env.JWT_REFRESH_SECRET_KEY, 'HS256');
+      await verify(refreshToken, env.JWT_REFRESH_SECRET_KEY, "HS256");
       const { payload } = decode(refreshToken);
       let orgDetails;
 
-      if (query.organizationId) {
+      if (query.organizationId != null) {
         orgDetails = await UserOrganizationEntity.get({
           orgId: query.organizationId,
           userId: payload.id as string,
@@ -141,7 +141,7 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
           return c.json(
             {
               success: false,
-              message: 'Organization not found',
+              message: "Organization not found",
             },
             HttpStatusCodes.BAD_REQUEST,
           );
@@ -152,19 +152,19 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
         id: payload.id,
         email: payload.email,
         name: payload.name,
-        ...(query.organizationId && {
+        ...(query.organizationId != null && {
           organizationId: query.organizationId,
           role: orgDetails?.data?.role,
         }),
       } as BaseTokenPayload | OrgTokenPayload;
 
-      const { accessToken, refreshToken: newRefreshToken }
-        = await generateTokens(tokenPayload);
+      const { accessToken, refreshToken: newRefreshToken } =
+        await generateTokens(tokenPayload);
 
-      setCookie(c, 'refreshToken', newRefreshToken, {
+      setCookie(c, "refreshToken", newRefreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60,
       });
 
@@ -175,13 +175,12 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
         },
         HttpStatusCodes.OK,
       );
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof JwtTokenExpired) {
         return c.json(
           {
             success: false,
-            message: 'Refresh token expired',
+            message: "Refresh token expired",
           },
           HttpStatusCodes.FORBIDDEN,
         );
@@ -189,18 +188,17 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
       return c.json(
         {
           success: false,
-          message: 'Invalid refresh token',
+          message: "Invalid refresh token",
         },
         HttpStatusCodes.UNAUTHORIZED,
       );
     }
-  }
-  catch (error) {
+  } catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
         success: false,
-        message: 'An unexpected error occurred',
+        message: "An unexpected error occurred",
       },
       HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
@@ -209,21 +207,20 @@ export const refresh: AppRouteHandler<RefreshRoute> = async (c) => {
 
 export const logout: AppRouteHandler<LogoutRoute> = async (c) => {
   try {
-    deleteCookie(c, 'refreshToken');
+    deleteCookie(c, "refreshToken");
     return c.json(
       {
         success: true,
-        message: 'Successfully logged out',
+        message: "Successfully logged out",
       },
       HttpStatusCodes.OK,
     );
-  }
-  catch (error) {
+  } catch (error) {
     c.var.logger.error(error);
     return c.json(
       {
         success: false,
-        message: 'An unexpected error occurred',
+        message: "An unexpected error occurred",
       },
       HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );

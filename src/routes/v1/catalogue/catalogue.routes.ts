@@ -1,12 +1,12 @@
-import { createRoute, z } from '@hono/zod-openapi';
+import { createRoute, z } from "@hono/zod-openapi";
 
-import * as HttpStatusCodes from '@/lib/http-status-code.js';
-import { jsonContent } from '@/lib/openapi/helpers/json-content.js';
+import * as HttpStatusCodes from "@/lib/http-status-code.js";
+import { jsonContent } from "@/lib/openapi/helpers/json-content.js";
 import {
   authenticate,
   requireOrganization,
-} from '@/middleware/authenticate.js';
-import { requirePermission } from '@/middleware/require-permission.js';
+} from "@/middleware/authenticate.js";
+import { requirePermission } from "@/middleware/require-permission.js";
 
 const createCatalogueSchema = z.object({
   name: z.string().min(1),
@@ -14,13 +14,13 @@ const createCatalogueSchema = z.object({
 });
 
 export const createCatalogueRoute = createRoute({
-  method: 'post',
-  tags: ['Catalogue'],
-  path: '/catalogue',
+  method: "post",
+  tags: ["Catalogue"],
+  path: "/catalogue",
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: createCatalogueSchema,
         },
       },
@@ -29,7 +29,7 @@ export const createCatalogueRoute = createRoute({
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('create:catalogue'),
+    requirePermission("create:catalogue"),
   ] as const,
   security: [{ Bearer: [] }],
   responses: {
@@ -43,20 +43,20 @@ export const createCatalogueRoute = createRoute({
         createdAt: z.number(),
         updatedAt: z.number(),
       }),
-      'Catalogue created successfully',
+      "Catalogue created successfully",
     ),
   },
 });
 
 const getCataloguesSchema = z.object({
   cursor: z.string().optional(),
-  order: z.enum(['asc', 'desc']).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
 });
 
 export const getCataloguesRoute = createRoute({
-  method: 'get',
-  tags: ['Catalogue'],
-  path: '/catalogue',
+  method: "get",
+  tags: ["Catalogue"],
+  path: "/catalogue",
   security: [{ Bearer: [] }],
   request: {
     query: getCataloguesSchema,
@@ -74,50 +74,51 @@ export const getCataloguesRoute = createRoute({
             createdAt: z.number(),
             updatedAt: z.number(),
             deletedAt: z.number().optional(),
-            images: z.array(z.object({
-              imageUrl: z.string(),
-              blurhash: z.string().optional(),
-              imageId: z.string(),
-              catalogueId: z.string(),
-              itemId: z.string(),
-            })),
-            
+            images: z.array(
+              z.object({
+                imageUrl: z.string(),
+                blurhash: z.string().optional(),
+                imageId: z.string(),
+                catalogueId: z.string(),
+                itemId: z.string(),
+              }),
+            ),
           }),
         ),
         nextCursor: z.string().nullable(),
       }),
-      'List of catalogues retrieved successfully',
+      "List of catalogues retrieved successfully",
     ),
   },
   middleware: [authenticate, requireOrganization] as const,
 });
 
 export const createCatalogueItemRoute = createRoute({
-  method: 'post',
-  tags: ['Catalogue'],
-  path: '/catalogue/{catalogueId}',
+  method: "post",
+  tags: ["Catalogue"],
+  path: "/catalogue/{catalogueId}",
   security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
-        'multipart/form-data': {
+        "multipart/form-data": {
           schema: z
             .record(
               z.string().min(1),
               z
-                .instanceof(File, { message: 'Please upload a file.' })
-                .refine(f => f.size <= 5 * 1024 * 1024, {
-                  message: 'Max 5 MB upload size.',
+                .instanceof(File, { message: "Please upload a file." })
+                .refine((f) => f.size <= 5 * 1024 * 1024, {
+                  message: "Max 5 MB upload size.",
                 })
-                .refine(f => f.type.includes('image/'), {
-                  message: 'Only images are allowed',
+                .refine((f) => f.type.includes("image/"), {
+                  message: "Only images are allowed",
                 }),
             )
-            .refine(files => Object.keys(files).length <= 1, {
-              message: 'Maximum 1 file allowed',
+            .refine((files) => Object.keys(files).length <= 1, {
+              message: "Maximum 1 file allowed",
             })
-            .refine(files => Object.keys(files).length >= 1, {
-              message: 'Minimum 1 file required',
+            .refine((files) => Object.keys(files).length >= 1, {
+              message: "Minimum 1 file required",
             }),
         },
       },
@@ -126,10 +127,10 @@ export const createCatalogueItemRoute = createRoute({
       name: z.string().min(1).max(100),
       description: z.string().max(500).optional().nullable(),
       price: z.coerce
-        .number({ message: 'Enter a valid price' })
-        .positive('Price must be greater than 0')
-        .multipleOf(0.01, 'Price can only have up to 2 decimal places')
-        .min(0.01, 'Minimum price is 0.01'),
+        .number({ message: "Enter a valid price" })
+        .positive("Price must be greater than 0")
+        .multipleOf(0.01, "Price can only have up to 2 decimal places")
+        .min(0.01, "Minimum price is 0.01"),
     }),
     params: z.object({
       catalogueId: z.string(),
@@ -140,30 +141,30 @@ export const createCatalogueItemRoute = createRoute({
       z.object({
         message: z.string(),
       }),
-      'Catalogue item created successfully',
+      "Catalogue item created successfully",
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      'Catalogue not found',
+      "Catalogue not found",
     ),
   },
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('create:catalogue'),
+    requirePermission("create:catalogue"),
   ] as const,
 });
 
 export const getCatalogueItems = createRoute({
-  method: 'get',
-  tags: ['Catalogue'],
-  path: '/catalogue/{catalogueId}',
+  method: "get",
+  tags: ["Catalogue"],
+  path: "/catalogue/{catalogueId}",
   security: [{ Bearer: [] }],
   request: {
     query: getCataloguesSchema.extend({
-      priceSort: z.enum(['asc', 'desc']).optional(),
+      priceSort: z.enum(["asc", "desc"]).optional(),
     }),
     params: z.object({
       catalogueId: z.string(),
@@ -172,88 +173,98 @@ export const getCatalogueItems = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({
-          itemId: z.string(),
-          catalogueId: z.string(),
-          orgId: z.string(),
-          name: z.string(),
-          description: z.string().optional(),
-          price: z.number(),
-          metadata: z.any().optional(),
-          createdAt: z.number(),
-          updatedAt: z.number(),
-          deletedAt: z.number().optional(),
-          image: z.object({
-            imageUrl: z.string(),
-            blurhash: z.string().optional(),
-            uploadedAt: z.number().optional(),
+        items: z.array(
+          z.object({
+            itemId: z.string(),
+            catalogueId: z.string(),
+            orgId: z.string(),
+            name: z.string(),
+            description: z.string().optional(),
+            price: z.number(),
+            metadata: z.any().optional(),
+            createdAt: z.number(),
+            updatedAt: z.number(),
+            deletedAt: z.number().optional(),
+            image: z.object({
+              imageUrl: z.string(),
+              blurhash: z.string().optional(),
+              uploadedAt: z.number().optional(),
+            }),
           }),
-          
-        })),
+        ),
         nextCursor: z.string().nullable(),
       }),
-      'Catalogue items retrieved successfully',
+      "Catalogue items retrieved successfully",
     ),
   },
   middleware: [authenticate, requireOrganization] as const,
 });
 
 export const allItemsRoute = createRoute({
-  method: 'get',
-  tags: ['Catalogue'],
-  path: '/catalogue/all',
+  method: "get",
+  tags: ["Catalogue"],
+  path: "/catalogue/all",
   security: [{ Bearer: [] }],
   request: {
     query: getCataloguesSchema.extend({
-      priceSort: z.enum(['asc', 'desc']).optional(),
+      priceSort: z.enum(["asc", "desc"]).optional(),
     }),
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({
-          itemId: z.string(),
-          catalogueId: z.string(),
-          orgId: z.string(),
-          name: z.string(),
-          description: z.string().optional(),
-          price: z.number(),
-          metadata: z.any().optional(),
-          createdAt: z.number(),
-          updatedAt: z.number(),
-          deletedAt: z.number().optional(),
-          image: z.object({
-            imageUrl: z.string(),
-            blurhash: z.string().optional(),
-            uploadedAt: z.number().optional(),
+        items: z.array(
+          z.object({
+            itemId: z.string(),
+            catalogueId: z.string(),
+            orgId: z.string(),
+            name: z.string(),
+            description: z.string().optional(),
+            price: z.number(),
+            metadata: z.any().optional(),
+            createdAt: z.number(),
+            updatedAt: z.number(),
+            deletedAt: z.number().optional(),
+            image: z.object({
+              imageUrl: z.string(),
+              blurhash: z.string().optional(),
+              uploadedAt: z.number().optional(),
+            }),
           }),
-        })),
+        ),
         nextCursor: z.string().nullable(),
       }),
-      'All items retrieved successfully',
+      "All items retrieved successfully",
     ),
   },
   middleware: [authenticate, requireOrganization] as const,
 });
 
 export const bulkUpdatePricesRoute = createRoute({
-  method: 'post',
-  tags: ['Catalogue'],
-  path: '/catalogue/bulk-update-prices',
+  method: "post",
+  tags: ["Catalogue"],
+  path: "/catalogue/bulk-update-prices",
   security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
-            items: z.array(z.object({
-              catalogueId: z.string(),
-              itemId: z.string(),
-            })).min(1),
-            operation: z.enum(['clone', 'update']),
-            value: z.coerce.number({ message: 'Enter a valid number' }).positive('Value must be greater than 0').multipleOf(0.01, 'Value can only have up to 2 decimal places'),
-            mode: z.enum(['absolute', 'percentage']),
-            direction: z.enum(['increase', 'decrease']),
+            items: z
+              .array(
+                z.object({
+                  catalogueId: z.string(),
+                  itemId: z.string(),
+                }),
+              )
+              .min(1),
+            operation: z.enum(["clone", "update"]),
+            value: z.coerce
+              .number({ message: "Enter a valid number" })
+              .positive("Value must be greater than 0")
+              .multipleOf(0.01, "Value can only have up to 2 decimal places"),
+            mode: z.enum(["absolute", "percentage"]),
+            direction: z.enum(["increase", "decrease"]),
             newCatalogueId: z.string().optional(),
           }),
         },
@@ -265,38 +276,42 @@ export const bulkUpdatePricesRoute = createRoute({
       z.object({
         message: z.string(),
       }),
-      'Prices updated successfully',
+      "Prices updated successfully",
     ),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      'Invalid items',
+      "Invalid items",
     ),
   },
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('update:catalogue'),
+    requirePermission("update:catalogue"),
   ] as const,
 });
 
 export const bulkTransferItemsRoute = createRoute({
-  method: 'post',
-  tags: ['Catalogue'],
-  path: '/catalogue/bulk-transfer-items',
+  method: "post",
+  tags: ["Catalogue"],
+  path: "/catalogue/bulk-transfer-items",
   security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
-            items: z.array(z.object({
-              catalogueId: z.string(),
-              itemId: z.string(),
-            })).min(1),
+            items: z
+              .array(
+                z.object({
+                  catalogueId: z.string(),
+                  itemId: z.string(),
+                }),
+              )
+              .min(1),
             newCatalogueId: z.string().optional(),
-            operation: z.enum(['clone', 'transfer']),
+            operation: z.enum(["clone", "transfer"]),
           }),
         },
       },
@@ -307,36 +322,40 @@ export const bulkTransferItemsRoute = createRoute({
       z.object({
         message: z.string(),
       }),
-      'Items transferred successfully',
+      "Items transferred successfully",
     ),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      'Invalid items',
+      "Invalid items",
     ),
   },
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('update:catalogue'),
+    requirePermission("update:catalogue"),
   ] as const,
 });
 
 export const bulkDeleteItemsRoute = createRoute({
-  method: 'delete',
-  tags: ['Catalogue'],
-  path: '/catalogue/bulk-delete-items',
+  method: "delete",
+  tags: ["Catalogue"],
+  path: "/catalogue/bulk-delete-items",
   security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
-            items: z.array(z.object({
-              catalogueId: z.string(),
-              itemId: z.string(),
-            })).min(1),
+            items: z
+              .array(
+                z.object({
+                  catalogueId: z.string(),
+                  itemId: z.string(),
+                }),
+              )
+              .min(1),
           }),
         },
       },
@@ -350,31 +369,31 @@ export const bulkDeleteItemsRoute = createRoute({
       z.object({
         message: z.string(),
       }),
-      'Items deleted successfully',
+      "Items deleted successfully",
     ),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      'Invalid items',
+      "Invalid items",
     ),
   },
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('delete:catalogue'),
+    requirePermission("delete:catalogue"),
   ] as const,
 });
 
 export const updateCatalogueRoute = createRoute({
-  method: 'put',
-  tags: ['Catalogue'],
-  path: '/catalogue/{catalogueId}',
+  method: "put",
+  tags: ["Catalogue"],
+  path: "/catalogue/{catalogueId}",
   security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             name: z.string().trim().min(1).max(100),
             description: z.string().trim().max(500).optional(),
@@ -391,20 +410,20 @@ export const updateCatalogueRoute = createRoute({
       z.object({
         message: z.string(),
       }),
-      'Catalogue updated successfully',
+      "Catalogue updated successfully",
     ),
   },
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('update:catalogue'),
+    requirePermission("update:catalogue"),
   ] as const,
 });
 
 export const deleteCatalogueRoute = createRoute({
-  method: 'delete',
-  tags: ['Catalogue'],
-  path: '/catalogue/{catalogueId}',
+  method: "delete",
+  tags: ["Catalogue"],
+  path: "/catalogue/{catalogueId}",
   security: [{ Bearer: [] }],
   request: {
     params: z.object({
@@ -413,26 +432,26 @@ export const deleteCatalogueRoute = createRoute({
   },
   responses: {
     [HttpStatusCodes.NO_CONTENT]: {
-      description: 'Catalogue deleted successfully',
+      description: "Catalogue deleted successfully",
     },
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      'Catalogue is not empty',
+      "Catalogue is not empty",
     ),
   },
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('delete:catalogue'),
+    requirePermission("delete:catalogue"),
   ] as const,
 });
 
 export const getCatalogueItemRoute = createRoute({
-  method: 'get',
-  tags: ['Catalogue'],
-  path: '/catalogue/{catalogueId}/{itemId}',
+  method: "get",
+  tags: ["Catalogue"],
+  path: "/catalogue/{catalogueId}/{itemId}",
   security: [{ Bearer: [] }],
   request: {
     params: z.object({
@@ -443,46 +462,50 @@ export const getCatalogueItemRoute = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-          itemId: z.string(),
-          catalogueId: z.string(),
-          orgId: z.string(),
-          name: z.string(),
-          description: z.string().optional(),
-          price: z.number(),
-          metadata: z.any().optional(),
-          createdAt: z.number(),
-          updatedAt: z.number(),
-          deletedAt: z.number().optional(),
-          image: z.object({
-            imageUrl: z.string(),
-            blurhash: z.string().optional(),
-            uploadedAt: z.number().optional(),
-          }),
+        itemId: z.string(),
+        catalogueId: z.string(),
+        orgId: z.string(),
+        name: z.string(),
+        description: z.string().optional(),
+        price: z.number(),
+        metadata: z.any().optional(),
+        createdAt: z.number(),
+        updatedAt: z.number(),
+        deletedAt: z.number().optional(),
+        image: z.object({
+          imageUrl: z.string(),
+          blurhash: z.string().optional(),
+          uploadedAt: z.number().optional(),
         }),
-      'Catalogue item retrieved successfully',
+      }),
+      "Catalogue item retrieved successfully",
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      'Catalogue item not found',
-    )
+      "Catalogue item not found",
+    ),
   },
   middleware: [authenticate, requireOrganization] as const,
 });
 export const updateCatalogueItemRoute = createRoute({
-  method: 'put',
-  tags: ['Catalogue'],
-  path: '/catalogue/{catalogueId}/{itemId}',
+  method: "put",
+  tags: ["Catalogue"],
+  path: "/catalogue/{catalogueId}/{itemId}",
   security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             name: z.string().trim().max(100),
             description: z.string().trim().max(500).optional(),
-            price: z.coerce.number({ message: 'Enter a valid number' }).positive('Price must be greater than 0').multipleOf(0.01, 'Price can only have up to 2 decimal places').min(0.01, 'Minimum price is 0.01'),
+            price: z.coerce
+              .number({ message: "Enter a valid number" })
+              .positive("Price must be greater than 0")
+              .multipleOf(0.01, "Price can only have up to 2 decimal places")
+              .min(0.01, "Minimum price is 0.01"),
           }),
         },
       },
@@ -497,26 +520,26 @@ export const updateCatalogueItemRoute = createRoute({
       z.object({
         message: z.string(),
       }),
-      'Catalogue item updated successfully',
+      "Catalogue item updated successfully",
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      'Catalogue item not found',
+      "Catalogue item not found",
     ),
   },
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('update:catalogue'),
+    requirePermission("update:catalogue"),
   ] as const,
 });
 
 export const deleteCatalogueItemRoute = createRoute({
-  method: 'delete',
-  tags: ['Catalogue'],
-  path: '/catalogue/{catalogueId}/{itemId}',
+  method: "delete",
+  tags: ["Catalogue"],
+  path: "/catalogue/{catalogueId}/{itemId}",
   security: [{ Bearer: [] }],
   request: {
     params: z.object({
@@ -526,26 +549,26 @@ export const deleteCatalogueItemRoute = createRoute({
   },
   responses: {
     [HttpStatusCodes.NO_CONTENT]: {
-      description: 'Catalogue item deleted successfully',
+      description: "Catalogue item deleted successfully",
     },
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
       z.object({
         message: z.string(),
       }),
-      'Catalogue item not found',
+      "Catalogue item not found",
     ),
   },
   middleware: [
     authenticate,
     requireOrganization,
-    requirePermission('delete:catalogue'),
+    requirePermission("delete:catalogue"),
   ] as const,
 });
 
 export const searchCataloguesRoute = createRoute({
-  method: 'get',
-  tags: ['Catalogue'],
-  path: '/catalogue/search',
+  method: "get",
+  tags: ["Catalogue"],
+  path: "/catalogue/search",
   security: [{ Bearer: [] }],
   request: {
     query: z.object({
@@ -555,36 +578,38 @@ export const searchCataloguesRoute = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({
-          catalogueId: z.string(),
-          orgId: z.string(),
-          name: z.string(),
-          description: z.string().optional(),
-          createdBy: z.string(),
-          createdAt: z.number(),
-          updatedAt: z.number(),
-          deletedAt: z.number().optional(),
-          images: z.array(z.object({
-            imageUrl: z.string(),
-            blurhash: z.string().optional(),
-            imageId: z.string(),
+        items: z.array(
+          z.object({
             catalogueId: z.string(),
-            itemId: z.string(),
-          })),
-          
-        })),
-
+            orgId: z.string(),
+            name: z.string(),
+            description: z.string().optional(),
+            createdBy: z.string(),
+            createdAt: z.number(),
+            updatedAt: z.number(),
+            deletedAt: z.number().optional(),
+            images: z.array(
+              z.object({
+                imageUrl: z.string(),
+                blurhash: z.string().optional(),
+                imageId: z.string(),
+                catalogueId: z.string(),
+                itemId: z.string(),
+              }),
+            ),
+          }),
+        ),
       }),
-      'Catalogues searched successfully',
+      "Catalogues searched successfully",
     ),
   },
   middleware: [authenticate, requireOrganization] as const,
 });
 
 export const searchAllCatalogueItemsRoute = createRoute({
-  method: 'get',
-  tags: ['Catalogue'],
-  path: '/catalogue/search-items',
+  method: "get",
+  tags: ["Catalogue"],
+  path: "/catalogue/search-items",
   security: [{ Bearer: [] }],
   request: {
     query: z.object({
@@ -594,35 +619,36 @@ export const searchAllCatalogueItemsRoute = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({
-          itemId: z.string(),
-          catalogueId: z.string(),
-          orgId: z.string(),
-          name: z.string(),
-          description: z.string().optional(),
-          price: z.number(),
-          metadata: z.any().optional(),
-          createdAt: z.number(),
-          updatedAt: z.number(),
-          deletedAt: z.number().optional(),
-          image: z.object({
-            imageUrl: z.string(),
-            blurhash: z.string().optional(),
-            uploadedAt: z.number().optional(),
+        items: z.array(
+          z.object({
+            itemId: z.string(),
+            catalogueId: z.string(),
+            orgId: z.string(),
+            name: z.string(),
+            description: z.string().optional(),
+            price: z.number(),
+            metadata: z.any().optional(),
+            createdAt: z.number(),
+            updatedAt: z.number(),
+            deletedAt: z.number().optional(),
+            image: z.object({
+              imageUrl: z.string(),
+              blurhash: z.string().optional(),
+              uploadedAt: z.number().optional(),
+            }),
           }),
-          
-        })),
+        ),
       }),
-      'Catalogues searched successfully',
+      "Catalogues searched successfully",
     ),
   },
   middleware: [authenticate, requireOrganization] as const,
 });
 
 export const searchCatalogueItemsRoute = createRoute({
-  method: 'get',
-  tags: ['Catalogue'],
-  path: '/catalogue/search-items/{catalogueId}',
+  method: "get",
+  tags: ["Catalogue"],
+  path: "/catalogue/search-items/{catalogueId}",
   security: [{ Bearer: [] }],
   request: {
     query: z.object({
@@ -635,26 +661,27 @@ export const searchCatalogueItemsRoute = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        items: z.array(z.object({
-          itemId: z.string(),
-          catalogueId: z.string(),
-          orgId: z.string(),
-          name: z.string(),
-          description: z.string().optional(),
-          price: z.number(),
-          metadata: z.any().optional(),
-          createdAt: z.number(),
-          updatedAt: z.number(),
-          deletedAt: z.number().optional(),
-          image: z.object({
-            imageUrl: z.string(),
-            blurhash: z.string().optional(),
-            uploadedAt: z.number().optional(),
+        items: z.array(
+          z.object({
+            itemId: z.string(),
+            catalogueId: z.string(),
+            orgId: z.string(),
+            name: z.string(),
+            description: z.string().optional(),
+            price: z.number(),
+            metadata: z.any().optional(),
+            createdAt: z.number(),
+            updatedAt: z.number(),
+            deletedAt: z.number().optional(),
+            image: z.object({
+              imageUrl: z.string(),
+              blurhash: z.string().optional(),
+              uploadedAt: z.number().optional(),
+            }),
           }),
-          
-        })),
+        ),
       }),
-      'Catalogues searched successfully',
+      "Catalogues searched successfully",
     ),
   },
   middleware: [authenticate, requireOrganization] as const,

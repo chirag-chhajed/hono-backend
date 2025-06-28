@@ -1,7 +1,7 @@
-import { serve } from '@hono/node-server';
+import { serve } from "@hono/node-server";
 
-import app from '@/app.js';
-import { env } from '@/env.js';
+import app from "@/app.js";
+import { env } from "@/env.js";
 
 serve(
   {
