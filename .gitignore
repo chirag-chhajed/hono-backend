@@ -32,3 +32,9 @@ dist
 dynamodb_data
 fir-authentication*.json
 db.ts
+lambda
+hello.json
+*.zip
+*.node_modules
+*.md
+!README.md
